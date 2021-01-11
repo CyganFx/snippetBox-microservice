@@ -22,7 +22,7 @@ func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 
 	os.Setenv("dsn", "user=web password=duman070601 "+
-		"host=localhost port=5432 dbname=snippetbox parseTime=true pool_max_conns=10")
+		"host=localhost port=5432 dbname=snippetbox pool_max_conns=10")
 
 	dsn := flag.String("dsn",
 		os.Getenv("dsn"),
