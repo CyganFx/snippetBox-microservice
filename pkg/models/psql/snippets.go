@@ -3,30 +3,32 @@ package psql
 import (
 	"alexedwards.net/snippetbox/pkg/models"
 	"context"
-	"database/sql"
-	"errors"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
+	"strconv"
+	"time"
 )
 
 type SnippetModel struct {
 	DB *pgxpool.Pool
 }
 
-func (m *SnippetModel) Insert(title, content string) (int, error) {
+func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 	stmt := `INSERT INTO snippets (title, content, created, expires)
-	VALUES($1, $2, now(), now() + INTERVAL '7' DAY) RETURNING id`
-
+	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
-
+	integerExpires, err := strconv.Atoi(expires)
+	if err != nil {
+		log.Fatal(err)
+	}
 	//Using queryRow in order to get ID with the SCAN
 	row := m.DB.QueryRow(
-		context.Background(), stmt, title, content).
+		context.Background(), stmt, title, content,
+		time.Now(), time.Now().AddDate(0, 0, integerExpires)).
 		Scan(&id)
 
 	if row != nil {
 		log.Fatal(row)
-
 	}
 
 	return id, nil
@@ -43,7 +45,7 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 			&snippet.Content, &snippet.Created, &snippet.Expires)
 
 	if row != nil {
-		if errors.Is(row, sql.ErrNoRows) {
+		if row.Error() == "no rows in result set" {
 			return nil, models.ErrNoRecord
 		} else {
 			return nil, row
