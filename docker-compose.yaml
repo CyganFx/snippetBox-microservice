@@ -1,0 +1,18 @@
+#version: "3"
+#
+#volumes:
+#  postgres_volume:
+#
+#services:
+#  snippetbox:
+#    restart: always
+#    ports:
+#    - 8080:8080
+#    environment:
+#      - dsn=user=web password=duman070601 host=localhost port=5432 dbname=snippetbox pool_max_conns=10
+#
+#  postgres:
+#    image: postgres
+#    volumes:
+#    - postgres_volume:/data/db
+#    restart: always
