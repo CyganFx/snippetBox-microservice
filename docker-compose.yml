@@ -1,0 +1,23 @@
+version: "3"
+services:
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "4000:4000"
+    restart: always
+    environment:
+      connection: postgres://postgres:duman070601@host.docker.internal:5432/snippetbox?sslmode=disable
+    depends_on:
+      - database
+
+  database:
+    image: postgres
+    container_name: postgres_container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: duman070601
+      POSTGRES_DB: snippetbox
+    restart: always

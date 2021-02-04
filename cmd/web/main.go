@@ -23,11 +23,8 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	os.Setenv("dsn", "user=web password=duman070601 "+
-		"host=localhost port=5432 dbname=snippetbox pool_max_conns=10")
-
 	dsn := flag.String("dsn",
-		os.Getenv("dsn"),
+		os.Getenv("connection"),
 		"PostgreSQL data source name")
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
 	flag.Parse()
@@ -65,5 +62,6 @@ func main() {
 
 	infoLog.Printf("Starting  server on %v", *addr)
 	err = srv.ListenAndServe()
+
 	errorLog.Fatal(err)
 }

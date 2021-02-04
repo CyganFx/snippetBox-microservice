@@ -1,14 +1,14 @@
-FROM golang
+FROM golang AS builder
+COPY . /app
 WORKDIR /app
-COPY go.mod .
-COPY go.sum .
 RUN go mod download
-COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o myApp ./cmd/web
 
-
-# Build final image
 FROM alpine:latest
+WORKDIR /root
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=0 /app .
-CMD ["./cmd/web"]
+COPY --from=builder /app /root/
+
+EXPOSE 4000
+
+CMD ["./myApp"]
