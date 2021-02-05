@@ -9,6 +9,4 @@ WORKDIR /root
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /app /root/
 
-EXPOSE 4000
-
-CMD ["./myApp"]
+#ubral CMD["./myApp"] v compose (tipo po best practice)tcr
