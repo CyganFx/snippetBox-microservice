@@ -35,3 +35,17 @@ GRANT CONNECT ON DATABASE snippetbox TO web;
 GRANT USAGE ON SCHEMA public TO web;
 GRANT SELECT, INSERT, UPDATE ON all tables in schema public TO web;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO web;
+
+
+
+CREATE TABLE users
+(
+    id              SERIAL      NOT NULL PRIMARY KEY,
+    name            VARCHAR(255) NOT NULL,
+    email           VARCHAR(255) NOT NULL,
+    hashed_password CHAR(60)     NOT NULL,
+    created         TIMESTAMP     NOT NULL,
+    active          BOOLEAN      NOT NULL DEFAULT TRUE
+);
+ALTER TABLE users
+    ADD CONSTRAINT users_uc_email UNIQUE (email);

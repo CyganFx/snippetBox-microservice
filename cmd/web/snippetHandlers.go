@@ -5,6 +5,7 @@ import (
 	"alexedwards.net/snippetbox/pkg/models"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
@@ -21,7 +22,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
