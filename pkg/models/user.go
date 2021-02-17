@@ -17,12 +17,12 @@ var (
 //sql.Nullstring doesn't work
 
 type User struct {
-	ID       int       `json:"id"`
-	Name     string    `json:"name"`
-	Email    string    `json:"email"`
-	Password []byte    `json:"password"`
-	Created  time.Time `json:"created"`
-	Active   bool      `json:"active"`
+	ID             int       `json:"id"`
+	Name           string    `json:"name"`
+	Email          string    `json:"email"`
+	HashedPassword []byte    `json:"hashedPassword"`
+	Created        time.Time `json:"created"`
+	Active         bool      `json:"active"`
 }
 
 type JWT struct {

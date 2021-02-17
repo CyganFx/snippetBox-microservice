@@ -3,59 +3,74 @@ package main
 import (
 	"alexedwards.net/snippetbox/pkg/forms"
 	"alexedwards.net/snippetbox/pkg/models"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 )
 
 func (app *application) signupForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display the user signup form...")
-
+	app.render(w, r, "signup.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new user...")
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	var user models.User
-
-	json.NewDecoder(r.Body).Decode(&user)
-
-	spew.Dump(user) //print
+	//var user models.User
+	//json.NewDecoder(r.Body).Decode(&user)
+	//spew.Dump(user) //print
 
 	form := forms.New(r.PostForm)
-	form.Required("email", "password")
+	form.Required("name", "email", "password")
+	form.MinLength("password", 10)
+	form.MatchesPattern("email", forms.EmailRX)
+	form.MaxLength("name", 255)
+	form.MaxLength("email", 255)
+
 	if !form.Valid() {
-		//TODO
 		app.render(w, r, "signup.page.tmpl", &templateData{
 			Form: form,
 		})
-	}
-
-	hash, err := bcrypt.GenerateFromPassword(user.Password, 10)
-	//TODO
-	if err != nil {
-		log.Fatal(err)
-	}
-	user.Password = hash
-
-	id, err := app.snippets.Insert(
-		form.Get("title"), form.Get("content"), form.Get("expires"))
-	if err != nil {
-		app.serverError(w, err)
 		return
 	}
 
-	app.session.Put(r, "flash", "Snippet successfully created!")
+	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.Errors.Add("email", "Address is already in use")
+			app.render(w, r, "signup.page.tmpl", &templateData{
+				Form: form,
+			})
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
+	app.session.Put(r, "flash", "Your signup was successful. Please log in.")
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+
+	//hash, err := bcrypt.GenerateFromPassword(user.Password, 10)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//user.Password = hash
+	//
+	//id, err := app.snippets.Insert(
+	//	form.Get("title"), form.Get("content"), form.Get("expires"))
+	//if err != nil {
+	//	app.serverError(w, err)
+	//	return
+	//}
+	//
+	//app.session.Put(r, "flash", "Snippet successfully created!")
+	//
+	//http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
 
 func (app *application) loginForm(w http.ResponseWriter, r *http.Request) {
