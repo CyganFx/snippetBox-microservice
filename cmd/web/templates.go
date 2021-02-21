@@ -1,19 +1,20 @@
 package main
 
 import (
+	"alexedwards.net/snippetbox/pkg/domain"
 	"alexedwards.net/snippetbox/pkg/forms"
-	"alexedwards.net/snippetbox/pkg/models"
 	"html/template"
 	"path/filepath"
 	"time"
 )
 
 type templateData struct {
-	CurrentYear int
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
-	Form        *forms.Form
-	Flash       string
+	CurrentYear     int
+	Snippet         *domain.Snippet
+	Snippets        []*domain.Snippet
+	Form            *forms.Form
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {

@@ -1,10 +1,9 @@
 package main
 
 import (
+	"alexedwards.net/snippetbox/pkg/domain"
 	"alexedwards.net/snippetbox/pkg/forms"
-	"alexedwards.net/snippetbox/pkg/models"
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -21,7 +20,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//var user models.User
+	//var user domain.User
 	//json.NewDecoder(r.Body).Decode(&user)
 	//spew.Dump(user) //print
 
@@ -41,7 +40,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 
 	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
 	if err != nil {
-		if errors.Is(err, models.ErrDuplicateEmail) {
+		if errors.Is(err, domain.ErrDuplicateEmail) {
 			form.Errors.Add("email", "Address is already in use")
 			app.render(w, r, "signup.page.tmpl", &templateData{
 				Form: form,
@@ -74,21 +73,38 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) loginForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display the user login form...")
+	app.render(w, r, "login.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) login(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Login the user...")
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	var user *domain.User
+	form := forms.New(r.PostForm)
+	user, err = app.users.Authenticate(form.Get("email"), form.Get("password"))
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			form.Errors.Add("generic", "Email or Password is incorrect")
+			app.render(w, r, "login.page.tmpl", &templateData{Form: form})
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+	err = app.createSession(r, user)
+	if err != nil {
+		app.serverError(w, err)
+	}
+	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) logout(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Logout the user...")
-}
-
-func (app *application) protectedEndpoint(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (app *application) TokenVerifyMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return nil
+	app.session.Remove(r, "accessToken")
+	app.session.Put(r, "flash", "You've been logged out successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

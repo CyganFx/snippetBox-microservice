@@ -1,7 +1,7 @@
-package repositories
+package repository
 
 import (
-	"alexedwards.net/snippetbox/pkg/models"
+	"alexedwards.net/snippetbox/pkg/domain"
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
@@ -34,11 +34,11 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 	return id, nil
 }
 
-func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
+func (m *SnippetModel) Get(id int) (*domain.Snippet, error) {
 	stmt := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > now() AND id = $1`
 
-	snippet := &models.Snippet{}
+	snippet := &domain.Snippet{}
 
 	row := m.DB.QueryRow(context.Background(), stmt, id).
 		Scan(&snippet.ID, &snippet.Title,
@@ -46,7 +46,7 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
 	if row != nil {
 		if row.Error() == "no rows in result set" {
-			return nil, models.ErrNoRecord
+			return nil, domain.ErrNoRecord
 		} else {
 			return nil, row
 		}
@@ -55,7 +55,7 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	return snippet, nil
 }
 
-func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
+func (m *SnippetModel) Latest() ([]*domain.Snippet, error) {
 	stmt := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > now() ORDER BY created DESC LIMIT 10`
 
@@ -65,10 +65,10 @@ func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
 	}
 	defer rows.Close()
 
-	var snippets []*models.Snippet
+	var snippets []*domain.Snippet
 
 	for rows.Next() {
-		s := &models.Snippet{}
+		s := &domain.Snippet{}
 		err = rows.Scan(
 			&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 		if err != nil {

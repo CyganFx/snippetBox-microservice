@@ -1,8 +1,8 @@
 package main
 
 import (
+	"alexedwards.net/snippetbox/pkg/domain"
 	"alexedwards.net/snippetbox/pkg/forms"
-	"alexedwards.net/snippetbox/pkg/models"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -30,7 +30,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	s, err := app.snippets.Get(id)
 	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
+		if errors.Is(err, domain.ErrNoRecord) {
 			app.notFound(w)
 		} else {
 			app.serverError(w, err)

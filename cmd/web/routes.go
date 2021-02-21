@@ -15,18 +15,18 @@ func (app *application) routes() http.Handler {
 	postRouter := r.Methods("POST").Subrouter()
 
 	getRouter.Handle("/", dynamicMiddleware.ThenFunc(app.home))
-	getRouter.Handle("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetForm))
-	postRouter.Handle("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippet))
+	getRouter.Handle("/snippet/create",
+		dynamicMiddleware.Append(app.TokenVerify).ThenFunc(app.createSnippetForm))
+	postRouter.Handle("/snippet/create",
+		dynamicMiddleware.Append(app.TokenVerify).ThenFunc(app.createSnippet))
 	getRouter.Handle("/snippet/{id}", dynamicMiddleware.ThenFunc(app.showSnippet))
 
-	// Add the five new routes.
 	getRouter.Handle("/user/signup", dynamicMiddleware.ThenFunc(app.signupForm))
 	postRouter.Handle("/user/signup", dynamicMiddleware.ThenFunc(app.signup))
 	getRouter.Handle("/user/login", dynamicMiddleware.ThenFunc(app.loginForm))
 	postRouter.Handle("/user/login", dynamicMiddleware.ThenFunc(app.login))
-	postRouter.Handle("/user/logout", dynamicMiddleware.ThenFunc(app.logout))
-
-	//getRouter.Handle("/protected", dynamicMiddleware.ThenFunc(app.TokenVerifyMiddleware(app.protectedEndpoint)))
+	postRouter.Handle("/user/logout",
+		dynamicMiddleware.Append(app.TokenVerify).ThenFunc(app.logout))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
