@@ -8,11 +8,9 @@ import (
 	"crypto/tls"
 	"flag"
 	"github.com/golangcollege/sessions"
-	gorilla_session "github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/markbates/goth"
-	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
 	"html/template"
 	"log"
@@ -35,6 +33,12 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	// not using cookie store from oauth, so ignore errors in console
+	goth.UseProviders(
+		google.New(os.Getenv("GOOGLE_CLIENT_ID"),
+			os.Getenv("GOOGLE_CLIENT_SECRET"),
+			os.Getenv("CALLBACK_URL")),
+	)
 }
 
 func main() {
@@ -62,18 +66,6 @@ func main() {
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
-
-	authSessionStore := gorilla_session.NewCookieStore([]byte(*secret))
-	authSessionStore.MaxAge(720)
-	authSessionStore.Options.HttpOnly = true
-	// hz kak izvle4' otsyuda dannie, pust' stoit
-	gothic.Store = authSessionStore
-
-	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_CLIENT_ID"),
-			os.Getenv("GOOGLE_CLIENT_SECRET"),
-			os.Getenv("CALLBACK_URL")),
-	)
 
 	app := &application{
 		errorLog:      errorLog,

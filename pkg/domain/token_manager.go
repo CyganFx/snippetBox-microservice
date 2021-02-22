@@ -17,10 +17,9 @@ func NewManager(signingKey string) *Manager {
 	return &Manager{signingKey: signingKey}
 }
 
-func (m *Manager) NewJWT(user *User) (string, error) {
+func (m *Manager) NewJWT(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":    user.ID,
-		"username":   user.Name,
+		"email":      email,
 		"authorized": true,
 		"exp":        time.Now().Add(time.Hour).Unix(),
 	})

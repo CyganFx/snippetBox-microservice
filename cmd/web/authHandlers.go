@@ -4,12 +4,8 @@ import (
 	"alexedwards.net/snippetbox/pkg/domain"
 	"alexedwards.net/snippetbox/pkg/forms"
 	"errors"
-	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/markbates/goth/gothic"
 	"net/http"
-	"os"
-	"time"
 )
 
 func (app *application) signupForm(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +76,7 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = app.createSession(r, user)
+	err = app.generateTokenAndPutInSession(r, user.Email)
 	if err != nil {
 		app.serverError(w, err)
 	}
@@ -96,21 +92,14 @@ func (app *application) logout(w http.ResponseWriter, r *http.Request) {
 func (app *application) oauthCallback(w http.ResponseWriter, r *http.Request) {
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		app.serverError(w, err)
 		return
 	}
-
 	app.infoLog.Printf("oauth completed: %s", user)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email":      user.Email,
-		"authorized": true,
-		"exp":        time.Now().Add(time.Hour).Unix(),
-	})
-	signedToken, err := token.SignedString([]byte(os.Getenv("signingKey")))
+	err = app.generateTokenAndPutInSession(r, user.Email)
 	if err != nil {
-		app.serverError(w, errors.New("JWT creation problems"))
+		app.serverError(w, err)
 	}
-	app.session.Put(r, "accessToken", signedToken)
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 

@@ -47,9 +47,9 @@ func (app *application) ExtractToken(r *http.Request) string {
 	return str
 }
 
-func (app *application) createSession(r *http.Request, user *domain.User) error {
+func (app *application) generateTokenAndPutInSession(r *http.Request, email string) error {
 	tokenManager := domain.NewManager(os.Getenv("signingKey"))
-	token, err := tokenManager.NewJWT(user)
+	token, err := tokenManager.NewJWT(email)
 	if err != nil {
 		return errors.New("JWT token creation problems")
 	}
