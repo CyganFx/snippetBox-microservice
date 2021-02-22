@@ -28,6 +28,12 @@ func (app *application) routes() http.Handler {
 	postRouter.Handle("/user/logout",
 		dynamicMiddleware.Append(app.TokenVerify).ThenFunc(app.logout))
 
+	getRouter.Handle("/auth/{provider}",
+		dynamicMiddleware.ThenFunc(app.oauthCheck))
+
+	getRouter.Handle("/auth/{provider}/callback",
+		dynamicMiddleware.ThenFunc(app.oauthCallback))
+
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
 

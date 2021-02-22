@@ -1,12 +1,19 @@
 package main
 
+// HTTPS doesn't work with postman
+
 import (
 	"alexedwards.net/snippetbox/pkg/repository"
 	"context"
+	"crypto/tls"
 	"flag"
 	"github.com/golangcollege/sessions"
+	gorilla_session "github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
 	"html/template"
 	"log"
 	"net/http"
@@ -35,7 +42,7 @@ func main() {
 	dsn := flag.String("dsn",
 		os.Getenv("db_url"),
 		"PostgreSQL data source name")
-	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
+	secret := flag.String("secret", os.Getenv("SESSION_SECRET"), "Secret key")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -54,6 +61,19 @@ func main() {
 
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true
+
+	authSessionStore := gorilla_session.NewCookieStore([]byte(*secret))
+	authSessionStore.MaxAge(720)
+	authSessionStore.Options.HttpOnly = true
+	// hz kak izvle4' otsyuda dannie, pust' stoit
+	gothic.Store = authSessionStore
+
+	goth.UseProviders(
+		google.New(os.Getenv("GOOGLE_CLIENT_ID"),
+			os.Getenv("GOOGLE_CLIENT_SECRET"),
+			os.Getenv("CALLBACK_URL")),
+	)
 
 	app := &application{
 		errorLog:      errorLog,
@@ -64,16 +84,25 @@ func main() {
 		templateCache: templateCache,
 	}
 
+	// Initialize a tls.Config struct to hold the non-default TLS settings we want
+	// the server to use.
+	tlsConfig := &tls.Config{
+		PreferServerCipherSuites: true,
+		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	srv := &http.Server{
-		Addr:         *addr,
-		ErrorLog:     errorLog,
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
+		Addr:      *addr,
+		ErrorLog:  errorLog,
+		Handler:   app.routes(),
+		TLSConfig: tlsConfig,
+		//Add Idle, Read and Write timeouts to the server.
+		IdleTimeout:  time.Minute, //do not delete!
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting  server on %v", *addr)
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }

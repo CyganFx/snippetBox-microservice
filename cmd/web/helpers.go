@@ -42,15 +42,9 @@ func (app *application) isAuthenticated(r *http.Request) bool {
 }
 
 func (app *application) ExtractToken(r *http.Request) string {
-	//bearToken := r.Header.Get("Authorization")
 	bearToken := app.session.Get(r, "accessToken")
 	str := fmt.Sprintf("%v", bearToken)
 	return str
-	//strArr := strings.Split(str, " ")
-	//if len(strArr) == 2 {
-	//	return strArr[1]
-	//}
-	//return ""
 }
 
 func (app *application) createSession(r *http.Request, user *domain.User) error {
