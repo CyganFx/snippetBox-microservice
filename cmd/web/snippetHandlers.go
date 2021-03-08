@@ -11,7 +11,7 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	s, err := app.snippets.Latest()
+	s, err := app.snippetService.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -28,7 +28,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := app.snippets.Get(id)
+	s, err := app.snippetService.Find(id)
 	if err != nil {
 		if errors.Is(err, domain.ErrNoRecord) {
 			app.notFound(w)
@@ -69,7 +69,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := app.snippets.Insert(
+	id, err := app.snippetService.Save(
 		form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)

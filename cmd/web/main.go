@@ -4,6 +4,7 @@ package main
 
 import (
 	"alexedwards.net/snippetbox/pkg/repository"
+	"alexedwards.net/snippetbox/pkg/service"
 	"context"
 	"crypto/tls"
 	"flag"
@@ -20,12 +21,14 @@ import (
 )
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	session       *sessions.Session
-	snippets      *repository.SnippetModel
-	users         *repository.UserModel
-	templateCache map[string]*template.Template
+	errorLog *log.Logger
+	infoLog  *log.Logger
+	session  *sessions.Session
+	//snippetRepository *repository.SnippetRepositoryInterface
+	//userRepository    *repository.UserRepositoryInterface
+	templateCache  map[string]*template.Template
+	snippetService service.SnippetServiceInterface
+	userService    service.UserServiceInterface
 }
 
 func init() {
@@ -67,29 +70,38 @@ func main() {
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
 
+	//snippetRepository := repository.NewSnippetRepository(dbPool)
+	//userRepository := repository.NewUserRepository(dbPool)
+	//
+	//snippetService := service.NewSnippetService(snippetRepository)
+	//userService := service.NewUserService(userRepository)
+
+	snippetRepository := &repository.SnippetRepository{Pool: dbPool}
+	userRepository := &repository.UserRepository{Pool: dbPool}
+
+	snippetService := &service.SnippetService{SnippetRepository: snippetRepository}
+	userService := &service.UserService{UserRepository: userRepository}
+
 	app := &application{
-		errorLog:      errorLog,
-		infoLog:       infoLog,
-		session:       session,
-		snippets:      &repository.SnippetModel{DB: dbPool},
-		users:         &repository.UserModel{DB: dbPool},
-		templateCache: templateCache,
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		session:        session,
+		snippetService: snippetService,
+		userService:    userService,
+		templateCache:  templateCache,
 	}
 
-	// Initialize a tls.Config struct to hold the non-default TLS settings we want
-	// the server to use.
 	tlsConfig := &tls.Config{
 		PreferServerCipherSuites: true,
 		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
 	srv := &http.Server{
-		Addr:      *addr,
-		ErrorLog:  errorLog,
-		Handler:   app.routes(),
-		TLSConfig: tlsConfig,
-		//Add Idle, Read and Write timeouts to the server.
-		IdleTimeout:  time.Minute, //do not delete!
+		Addr:         *addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

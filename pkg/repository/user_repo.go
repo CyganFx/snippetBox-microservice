@@ -11,11 +11,15 @@ import (
 	"time"
 )
 
-type UserModel struct {
-	DB *pgxpool.Pool
+type UserRepository struct {
+	Pool *pgxpool.Pool
 }
 
-func (m *UserModel) Insert(name, email, password string) error {
+func NewUserRepository(Pool *pgxpool.Pool) UserRepositoryInterface {
+	return &UserRepository{Pool: Pool}
+}
+
+func (r *UserRepository) Insert(name, email, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return err
@@ -23,7 +27,7 @@ func (m *UserModel) Insert(name, email, password string) error {
 	stmt := `INSERT INTO users (name, email, hashed_password, created)
 	VALUES($1, $2, $3, $4)`
 
-	_, err = m.DB.Exec(context.Background(), stmt, name, email, string(hashedPassword), time.Now())
+	_, err = r.Pool.Exec(context.Background(), stmt, name, email, string(hashedPassword), time.Now())
 	if err != nil {
 		postgresError := err.(*pgconn.PgError)
 		if errors.As(err, &postgresError) {
@@ -37,12 +41,12 @@ func (m *UserModel) Insert(name, email, password string) error {
 	return nil
 }
 
-func (m *UserModel) Authenticate(email, password string) (*domain.User, error) {
+func (r *UserRepository) Authenticate(email, password string) (*domain.User, error) {
 	var id int
 	var username string
 	var hashedPassword []byte
 	stmt := "SELECT id, hashed_password, name FROM users WHERE email = $1 AND active = TRUE"
-	row := m.DB.QueryRow(context.Background(), stmt, email)
+	row := r.Pool.QueryRow(context.Background(), stmt, email)
 	err := row.Scan(&id, &hashedPassword, &username)
 
 	if err != nil {

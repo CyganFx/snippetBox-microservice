@@ -9,11 +9,15 @@ import (
 	"time"
 )
 
-type SnippetModel struct {
-	DB *pgxpool.Pool
+type SnippetRepository struct {
+	Pool *pgxpool.Pool
 }
 
-func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
+func NewSnippetRepository(Pool *pgxpool.Pool) SnippetRepositoryInterface {
+	return &SnippetRepository{Pool: Pool}
+}
+
+func (r *SnippetRepository) Insert(title, content, expires string) (int, error) {
 	stmt := `INSERT INTO snippets (title, content, created, expires)
 	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
@@ -22,7 +26,7 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 		log.Fatal(err)
 	}
 	//Using queryRow in order to get ID with the SCAN
-	row := m.DB.QueryRow(
+	row := r.Pool.QueryRow(
 		context.Background(), stmt, title, content,
 		time.Now(), time.Now().AddDate(0, 0, integerExpires)).
 		Scan(&id)
@@ -34,13 +38,13 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 	return id, nil
 }
 
-func (m *SnippetModel) Get(id int) (*domain.Snippet, error) {
+func (r *SnippetRepository) Get(id int) (*domain.Snippet, error) {
 	stmt := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > now() AND id = $1`
 
 	snippet := &domain.Snippet{}
 
-	row := m.DB.QueryRow(context.Background(), stmt, id).
+	row := r.Pool.QueryRow(context.Background(), stmt, id).
 		Scan(&snippet.ID, &snippet.Title,
 			&snippet.Content, &snippet.Created, &snippet.Expires)
 
@@ -55,11 +59,11 @@ func (m *SnippetModel) Get(id int) (*domain.Snippet, error) {
 	return snippet, nil
 }
 
-func (m *SnippetModel) Latest() ([]*domain.Snippet, error) {
+func (r *SnippetRepository) Latest() ([]*domain.Snippet, error) {
 	stmt := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > now() ORDER BY created DESC LIMIT 10`
 
-	rows, err := m.DB.Query(context.Background(), stmt)
+	rows, err := r.Pool.Query(context.Background(), stmt)
 	if err != nil {
 		return nil, err
 	}

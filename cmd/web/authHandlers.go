@@ -35,7 +35,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
+	err = app.userService.Save(form.Get("name"), form.Get("email"), form.Get("password"))
 	if err != nil {
 		if errors.Is(err, domain.ErrDuplicateEmail) {
 			form.Errors.Add("email", "Address is already in use")
@@ -66,7 +66,7 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 	}
 	var user *domain.User
 	form := forms.New(r.PostForm)
-	user, err = app.users.Authenticate(form.Get("email"), form.Get("password"))
+	user, err = app.userService.Authenticate(form.Get("email"), form.Get("password"))
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			form.Errors.Add("generic", "Email or Password is incorrect")

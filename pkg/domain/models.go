@@ -27,4 +27,5 @@ type User struct {
 	HashedPassword []byte    `json:"hashedPassword"`
 	Created        time.Time `json:"created"`
 	Active         bool      `json:"active"`
+	Role           string    `json:"role"`
 }
