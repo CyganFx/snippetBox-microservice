@@ -70,17 +70,11 @@ func main() {
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
 
-	//snippetRepository := repository.NewSnippetRepository(dbPool)
-	//userRepository := repository.NewUserRepository(dbPool)
-	//
-	//snippetService := service.NewSnippetService(snippetRepository)
-	//userService := service.NewUserService(userRepository)
+	snippetRepository := repository.NewSnippetRepository(dbPool)
+	userRepository := repository.NewUserRepository(dbPool)
 
-	snippetRepository := &repository.SnippetRepository{Pool: dbPool}
-	userRepository := &repository.UserRepository{Pool: dbPool}
-
-	snippetService := &service.SnippetService{SnippetRepository: snippetRepository}
-	userService := &service.UserService{UserRepository: userRepository}
+	snippetService := service.NewSnippetService(snippetRepository)
+	userService := service.NewUserService(userRepository)
 
 	app := &application{
 		errorLog:       errorLog,
