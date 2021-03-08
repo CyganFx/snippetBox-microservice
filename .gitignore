@@ -1,4 +1,5 @@
 *.exe
+./tls/
 # Directory-based project format:
 .idea/
 .idea/workspace.xml
