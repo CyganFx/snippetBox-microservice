@@ -3,4 +3,5 @@
 .idea/
 .idea/workspace.xml
 **/.idea/workspace.xml
-/tls/
+./news/tls/
+./user_details/tls/
