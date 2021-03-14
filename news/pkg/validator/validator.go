@@ -10,19 +10,19 @@ import (
 var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type Validator struct {
-	Errors errors
+	Errors Errors
 }
 
 func New() *Validator {
 	return &Validator{
-		map[string][]string{},
+		Errors{},
 	}
 }
 
 func (v *Validator) Required(fields ...string) {
 	for _, field := range fields {
 		if strings.TrimSpace(field) == "" {
-			v.Errors.Add(field, "This field cannot be blank")
+			v.Errors.Add("Field cannot be blank")
 		}
 	}
 }
@@ -32,7 +32,7 @@ func (v *Validator) MinLength(field string, d int) {
 		return
 	}
 	if utf8.RuneCountInString(field) < d {
-		v.Errors.Add(field, fmt.Sprintf("This field is too short (minimum is %d characters)", d))
+		v.Errors.Add(fmt.Sprintf("Field is too short (minimum is %d characters)", d))
 	}
 }
 
@@ -41,7 +41,7 @@ func (v *Validator) MatchesPattern(field string, pattern *regexp.Regexp) {
 		return
 	}
 	if !pattern.MatchString(field) {
-		v.Errors.Add(field, "This field is invalid")
+		v.Errors.Add("Invalid Field")
 	}
 }
 
@@ -50,7 +50,7 @@ func (v *Validator) MaxLength(field string, d int) {
 		return
 	}
 	if utf8.RuneCountInString(field) > d {
-		v.Errors.Add(field, fmt.Sprintf("This field is too long (maximum is %d characters)", d))
+		v.Errors.Add(fmt.Sprintf("This field is too long (maximum is %d characters)", d))
 	}
 }
 
@@ -63,9 +63,9 @@ func (v *Validator) PermittedValues(field string, opts ...string) {
 			return
 		}
 	}
-	v.Errors.Add(field, "This field is invalid")
+	v.Errors.Add("Invalid Field")
 }
 
 func (v *Validator) Valid() bool {
-	return len(v.Errors) == 0
+	return len(v.Errors.Errors) == 0
 }

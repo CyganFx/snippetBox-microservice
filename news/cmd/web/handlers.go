@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/validator"
 	"github.com/gin-gonic/gin"
@@ -39,31 +38,19 @@ func (app *application) showNews(c *gin.Context) {
 	c.JSON(http.StatusOK, news)
 }
 
-func (app *application) createNews(c *gin.Context) {
-	var news domain.News
-	err := c.BindJSON(&news)
-	if err != nil {
-		app.clientErrorWithDescription(c, http.StatusBadRequest, "couldn't bind json news")
-		return
-	}
-
+// TODO make controller class, not app
+func (app *application) CreateNews(title, content, expires string) (int, []string) {
 	v := validator.New()
-	v.Required("title", "content", "expires")
-	v.MaxLength("title", 100)
-	v.PermittedValues("expires", "365", "7", "1")
+	v.MaxLength(title, 100)
+	v.PermittedValues(expires, "365", "7", "1")
 	if !v.Valid() {
-		app.validationError(c, http.StatusBadRequest, v.Errors)
-		return
+		return -1, v.Errors.Errors
 	}
 
 	id, err := app.newsService.Save(
-		news.Title, news.Content, news.Expires)
-
+		title, content, expires)
 	if err != nil {
-		app.serverError(c, err)
-		return
+		return -1, v.Errors.Errors
 	}
-
-	c.Data(http.StatusOK, "application/json", []byte(fmt.Sprintf("News with id %d successfully created!", id)))
-	c.JSON(http.StatusOK, news)
+	return id, nil
 }

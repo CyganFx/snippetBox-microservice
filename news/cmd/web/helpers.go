@@ -56,13 +56,6 @@ func (app *application) clientErrorWithDescription(c *gin.Context, status int, d
 	})
 }
 
-func (app *application) validationError(c *gin.Context, status int, errors map[string][]string) {
-	c.JSON(status, gin.H{
-		"error":      http.StatusText(status),
-		"errorCause": errors,
-	})
-}
-
 func (app *application) notFound(c *gin.Context) {
 	app.clientError(c, http.StatusNotFound)
 }

@@ -51,7 +51,6 @@ func main() {
 	session.Secure = true
 
 	newsRepository := repository.NewNewsRepository(dbPool)
-
 	newsService := service.NewNewsService(newsRepository)
 
 	app := &application{

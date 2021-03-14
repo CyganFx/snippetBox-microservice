@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
-	"time"
 )
 
 type NewsService struct {
@@ -14,7 +13,7 @@ func NewNewsService(NewsRepository repository.NewsRepositoryInterface) NewsServi
 	return &NewsService{NewsRepository: NewsRepository}
 }
 
-func (s *NewsService) Save(title, content string, expires time.Time) (int, error) {
+func (s *NewsService) Save(title, content, expires string) (int, error) {
 	return s.NewsRepository.Insert(title, content, expires)
 }
 

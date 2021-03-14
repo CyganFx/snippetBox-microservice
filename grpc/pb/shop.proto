@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-package pb;
-
-option go_package = "github.com\\CyganFx\\grpc-test3\\pb\\pb;pb";
-
