@@ -11,8 +11,8 @@ func (app *application) routes() http.Handler {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery(), app.secureHeaders())
 
-	r.GET("/", app.home)
-	r.GET("/news/:id", app.showNews)
+	r.GET("/", app.newsHandler.Home)
+	r.GET("/news/:id", app.newsHandler.ShowNews)
 
 	return dynamicMiddleware.Then(r)
 }

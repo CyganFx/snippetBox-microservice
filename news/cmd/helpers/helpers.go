@@ -1,8 +1,9 @@
-package main
+package helpers
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -30,32 +31,40 @@ import (
 //	return nil
 //}
 
-func (app *application) humanDate(t time.Time) string {
+type Helper struct {
+	errorLog *log.Logger
+}
+
+func New(errorLog *log.Logger) HelperInterface {
+	return &Helper{errorLog: errorLog}
+}
+
+func (h *Helper) HumanDate(t time.Time) string {
 	return t.Format("02 Jan 2006 at 15:04")
 }
 
-func (app *application) serverError(c *gin.Context, err error) {
+func (h *Helper) ServerError(c *gin.Context, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errorLog.Output(2, trace)
+	h.errorLog.Output(2, trace)
 
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"error": err.Error(),
 	})
 }
 
-func (app *application) clientError(c *gin.Context, status int) {
+func (h *Helper) ClientError(c *gin.Context, status int) {
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"error": http.StatusText(status),
 	})
 }
 
-func (app *application) clientErrorWithDescription(c *gin.Context, status int, description string) {
+func (h *Helper) ClientErrorWithDescription(c *gin.Context, status int, description string) {
 	c.JSON(status, gin.H{
 		"error":       http.StatusText(status),
 		"description": description,
 	})
 }
 
-func (app *application) notFound(c *gin.Context) {
-	app.clientError(c, http.StatusNotFound)
+func (h *Helper) NotFound(c *gin.Context) {
+	h.ClientError(c, http.StatusNotFound)
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
+	"github.com/CyganFx/snippetBox-microservice/news/cmd/handler"
+	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
 	"github.com/golangcollege/sessions"
@@ -19,7 +21,7 @@ type application struct {
 	errorLog    *log.Logger
 	infoLog     *log.Logger
 	session     *sessions.Session
-	newsService service.NewsServiceInterface
+	newsHandler handler.NewsHandlerInterface
 }
 
 func init() {
@@ -52,12 +54,14 @@ func main() {
 
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
+	helper := helpers.New(errorLog)
+	newsHandler := handler.New(newsService, helper)
 
 	app := &application{
 		errorLog:    errorLog,
 		infoLog:     infoLog,
 		session:     session,
-		newsService: newsService,
+		newsHandler: newsHandler,
 	}
 
 	tlsConfig := &tls.Config{

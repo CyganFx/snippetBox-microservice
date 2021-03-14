@@ -3,19 +3,27 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"github.com/CyganFx/snippetBox-microservice/news/cmd/handler"
+	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
 	"github.com/CyganFx/snippetBox-microservice/news/grpc/news_pb"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
+	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
+	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 )
 
 type Server struct {
 	news_pb.UnimplementedNewsServiceServer
+	newsHandler handler.NewsHandlerInterface
 }
 
 // TODO Test
@@ -60,14 +68,23 @@ func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*new
 	return result, nil
 }
 
-//TODO
+//TODO test
 func (s *Server) CreateNews(ctx context.Context, req *news_pb.NewsCreateRequest) (*news_pb.NewsCreateResponse, error) {
 	log.Printf("GetNews function was invoked with %v \n", req)
-	//title := req.GetTitle()
-	//content := req.GetContent()
-	//expires := req.GetExpires()
+	title := req.GetTitle()
+	content := req.GetContent()
+	expires := req.GetExpires().String()
 
-	panic("implement me")
+	id, errors := s.newsHandler.CreateNews(title, content, expires)
+	if errors != nil {
+		for _, e := range errors {
+			return nil, fmt.Errorf(e)
+		}
+	}
+
+	result := &news_pb.NewsCreateResponse{Id: int32(id)}
+
+	return result, nil
 }
 
 func main() {
@@ -77,7 +94,25 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	news_pb.RegisterNewsServiceServer(s, &Server{})
+
+	dsn := flag.String("dsn",
+		os.Getenv("db_url"),
+		"PostgreSQL data source name")
+
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime)
+
+	dbPool, err := pgxpool.Connect(context.Background(), *dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer dbPool.Close()
+
+	newsRepository := repository.NewNewsRepository(dbPool)
+	newsService := service.NewNewsService(newsRepository)
+	helper := helpers.New(errorLog)
+	newsHandler := handler.New(newsService, helper)
+
+	news_pb.RegisterNewsServiceServer(s, &Server{newsHandler: newsHandler})
 	log.Println("Server is running on port:50051")
 	if err := s.Serve(l); err != nil {
 		log.Fatalf("failed to serve:%v", err)
