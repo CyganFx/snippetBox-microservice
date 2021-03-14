@@ -1,46 +1,20 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime/debug"
 	"time"
 )
 
-func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
-	if td == nil {
-		td = &templateData{}
-	}
-	td.CurrentYear = time.Now().Year()
-	td.Flash = app.session.PopString(r, "flash")
-	td.IsAuthenticated = app.isAuthenticated(r)
-	return td
-}
-
-func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
-	ts, ok := app.templateCache[name]
-	if !ok {
-		app.serverError(w, fmt.Errorf("The template %s does not exist", name))
-		return
-	}
-	buf := new(bytes.Buffer)
-
-	err := ts.Execute(buf, app.addDefaultData(td, r))
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	buf.WriteTo(w)
-}
-
 //TODO
-func (app *application) isAuthenticated(r *http.Request) bool {
-	return app.session.Exists(r, "accessToken")
-}
+//func (app *application) isAuthenticated(r *http.Request) bool {
+//	return app.session.Exists(r, "accessToken")
+//}
 
 //func (app *application) ExtractToken(r *http.Request) string {
-//	bearToken := app.session.Get(r, "accessToken")
+//	bearToken := app.session.GetById(r, "accessToken")
 //	str := fmt.Sprintf("%v", bearToken)
 //	return str
 //}
@@ -56,16 +30,39 @@ func (app *application) isAuthenticated(r *http.Request) bool {
 //	return nil
 //}
 
-func (app *application) serverError(w http.ResponseWriter, err error) {
+func (app *application) humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+func (app *application) serverError(c *gin.Context, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.errorLog.Output(2, trace)
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": err.Error(),
+	})
 }
 
-func (app *application) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
+func (app *application) clientError(c *gin.Context, status int) {
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": http.StatusText(status),
+	})
 }
 
-func (app *application) notFound(w http.ResponseWriter) {
-	app.clientError(w, http.StatusNotFound)
+func (app *application) clientErrorWithDescription(c *gin.Context, status int, description string) {
+	c.JSON(status, gin.H{
+		"error":       http.StatusText(status),
+		"description": description,
+	})
+}
+
+func (app *application) validationError(c *gin.Context, status int, errors map[string][]string) {
+	c.JSON(status, gin.H{
+		"error":      http.StatusText(status),
+		"errorCause": errors,
+	})
+}
+
+func (app *application) notFound(c *gin.Context) {
+	app.clientError(c, http.StatusNotFound)
 }

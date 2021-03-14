@@ -9,7 +9,6 @@ import (
 	"github.com/golangcollege/sessions"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,11 +16,10 @@ import (
 )
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	session       *sessions.Session
-	templateCache map[string]*template.Template
-	newsService   service.NewsServiceInterface
+	errorLog    *log.Logger
+	infoLog     *log.Logger
+	session     *sessions.Session
+	newsService service.NewsServiceInterface
 }
 
 func init() {
@@ -48,11 +46,6 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	templateCache, err := newTemplateCache("./ui/html/")
-	if err != nil {
-		errorLog.Fatal(err)
-	}
-
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
@@ -62,11 +55,10 @@ func main() {
 	newsService := service.NewNewsService(newsRepository)
 
 	app := &application{
-		errorLog:      errorLog,
-		infoLog:       infoLog,
-		session:       session,
-		newsService:   newsService,
-		templateCache: templateCache,
+		errorLog:    errorLog,
+		infoLog:     infoLog,
+		session:     session,
+		newsService: newsService,
 	}
 
 	tlsConfig := &tls.Config{
@@ -86,6 +78,5 @@ func main() {
 
 	infoLog.Printf("Starting  server on %v", *addr)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
-	//err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }

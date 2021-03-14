@@ -1,4 +1,4 @@
-# Snippetbox-microservice
+# snippetBox-microservice
 
 Before start:
 

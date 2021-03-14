@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"log"
-	"strconv"
 	"time"
 )
 
@@ -17,50 +15,57 @@ func NewNewsRepository(Pool *pgxpool.Pool) NewsRepositoryInterface {
 	return &NewsRepository{Pool: Pool}
 }
 
-func (r *NewsRepository) Insert(title, content, expires string) (int, error) {
-	stmt := `INSERT INTO snippets (title, content, created, expires)
+func (r *NewsRepository) Insert(title, content string, expires time.Time) (int, error) {
+	stmt := `INSERT INTO news (title, content, created, expires)
 	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
-	integerExpires, err := strconv.Atoi(expires)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	//Using queryRow in order to get ID with the SCAN
-	row := r.Pool.QueryRow(
+	//row := r.Pool.QueryRow(
+	//	context.Background(), stmt, title, content,
+	//	time.Now(), time.Now().AddDate(0, 0, expires)).
+	//	Scan(&id)
+	//
+	//if row != nil {
+	//	log.Fatal(row)
+	//}
+
+	//Using queryRow in order to get ID with the SCAN
+	err := r.Pool.QueryRow(
 		context.Background(), stmt, title, content,
-		time.Now(), time.Now().AddDate(0, 0, integerExpires)).
+		time.Now(), expires).
 		Scan(&id)
 
-	if row != nil {
-		log.Fatal(row)
+	if err != nil {
+		return -1, err
 	}
 
 	return id, nil
 }
 
-func (r *NewsRepository) Get(id int) (*domain.News, error) {
-	stmt := `SELECT id, title, content, created, expires FROM snippets
+func (r *NewsRepository) GetById(id int) (*domain.News, error) {
+	stmt := `SELECT id, title, content, created, expires FROM news
 	WHERE expires > now() AND id = $1`
 
-	snippet := &domain.News{}
+	news := &domain.News{}
 
-	row := r.Pool.QueryRow(context.Background(), stmt, id).
-		Scan(&snippet.ID, &snippet.Title,
-			&snippet.Content, &snippet.Created, &snippet.Expires)
+	err := r.Pool.QueryRow(context.Background(), stmt, id).
+		Scan(&news.ID, &news.Title,
+			&news.Content, &news.Created, &news.Expires)
 
-	if row != nil {
-		if row.Error() == "no rows in result set" {
+	if err != nil {
+		if err.Error() == "no rows in result set" {
 			return nil, domain.ErrNoRecord
 		} else {
-			return nil, row
+			return nil, err
 		}
 	}
 
-	return snippet, nil
+	return news, nil
 }
 
 func (r *NewsRepository) Latest() ([]*domain.News, error) {
-	stmt := `SELECT id, title, content, created, expires FROM snippets
+	stmt := `SELECT id, title, content, created, expires FROM news
 	WHERE expires > now() ORDER BY created DESC LIMIT 10`
 
 	rows, err := r.Pool.Query(context.Background(), stmt)
@@ -69,7 +74,7 @@ func (r *NewsRepository) Latest() ([]*domain.News, error) {
 	}
 	defer rows.Close()
 
-	var snippets []*domain.News
+	var news []*domain.News
 
 	for rows.Next() {
 		s := &domain.News{}
@@ -79,12 +84,12 @@ func (r *NewsRepository) Latest() ([]*domain.News, error) {
 			return nil, err
 		}
 
-		snippets = append(snippets, s)
+		news = append(news, s)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return snippets, nil
+	return news, nil
 }

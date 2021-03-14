@@ -4,79 +4,66 @@ import (
 	"errors"
 	"fmt"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/forms"
-	"github.com/gorilla/mux"
+	"github.com/CyganFx/snippetBox-microservice/news/pkg/validator"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	s, err := app.newsService.Latest()
+func (app *application) home(c *gin.Context) {
+	news, err := app.newsService.Latest()
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(c, err)
 		return
 	}
-	app.render(w, r, "home.page.tmpl", &templateData{
-		NewsArray: s,
-	})
+	c.JSON(http.StatusOK, news)
 }
 
-func (app *application) showNews(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+func (app *application) showNews(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		app.notFound(c)
 		return
 	}
-
-	s, err := app.newsService.Find(id)
+	news, err := app.newsService.FindById(id)
 	if err != nil {
 		if errors.Is(err, domain.ErrNoRecord) {
-			app.notFound(w)
+			app.notFound(c)
+			return
 		} else {
-			app.serverError(w, err)
+			app.serverError(c, err)
+			return
 		}
-		return
 	}
 
-	app.render(w, r, "show.page.tmpl", &templateData{
-		News: s,
-	})
+	c.JSON(http.StatusOK, news)
 }
 
-func (app *application) createNewsForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", &templateData{
-		Form: forms.New(nil),
-	})
-}
-
-func (app *application) createNews(w http.ResponseWriter, r *http.Request) {
-	// Limit the request body size to 4096 bytes, default: 10MB
-	r.Body = http.MaxBytesReader(w, r.Body, 4096)
-	err := r.ParseForm()
+func (app *application) createNews(c *gin.Context) {
+	var news domain.News
+	err := c.BindJSON(&news)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.clientErrorWithDescription(c, http.StatusBadRequest, "couldn't bind json news")
 		return
 	}
 
-	form := forms.New(r.PostForm)
-	form.Required("title", "content", "expires")
-	form.MaxLength("title", 100)
-	form.PermittedValues("expires", "365", "7", "1")
-	if !form.Valid() {
-		app.render(w, r, "create.page.tmpl", &templateData{
-			Form: form,
-		})
+	v := validator.New()
+	v.Required("title", "content", "expires")
+	v.MaxLength("title", 100)
+	v.PermittedValues("expires", "365", "7", "1")
+	if !v.Valid() {
+		app.validationError(c, http.StatusBadRequest, v.Errors)
 		return
 	}
 
 	id, err := app.newsService.Save(
-		form.Get("title"), form.Get("content"), form.Get("expires"))
+		news.Title, news.Content, news.Expires)
+
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(c, err)
 		return
 	}
 
-	app.session.Put(r, "flash", "News successfully created!")
-
-	http.Redirect(w, r, fmt.Sprintf("/news/%d", id), http.StatusSeeOther)
+	c.Data(http.StatusOK, "application/json", []byte(fmt.Sprintf("News with id %d successfully created!", id)))
+	c.JSON(http.StatusOK, news)
 }
