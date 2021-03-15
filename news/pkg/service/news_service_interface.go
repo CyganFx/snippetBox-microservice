@@ -5,7 +5,7 @@ import (
 )
 
 type NewsServiceInterface interface {
-	Save(title, content, expires string) (int, error)
+	Save(news *domain.News) (int, error)
 	FindById(id int) (*domain.News, error)
 	Latest() ([]*domain.News, error)
 }

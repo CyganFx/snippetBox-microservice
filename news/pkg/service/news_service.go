@@ -1,8 +1,10 @@
 package service
 
 import (
+	"fmt"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
+	"github.com/CyganFx/snippetBox-microservice/news/pkg/validator"
 )
 
 type NewsService struct {
@@ -13,7 +15,18 @@ func NewNewsService(NewsRepository repository.NewsRepositoryInterface) NewsServi
 	return &NewsService{NewsRepository: NewsRepository}
 }
 
-func (s *NewsService) Save(title, content, expires string) (int, error) {
+func (s *NewsService) Save(news *domain.News) (int, error) {
+	title := news.Title
+	content := news.Content
+	expires := news.Expires
+
+	v := validator.New()
+	v.MaxLength(title, 100)
+
+	if !v.Valid() {
+		return -1, fmt.Errorf("news validation error")
+	}
+
 	return s.NewsRepository.Insert(title, content, expires)
 }
 

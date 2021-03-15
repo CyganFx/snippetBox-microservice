@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"log"
-	"strconv"
 	"time"
 )
 
@@ -17,19 +15,18 @@ func NewNewsRepository(Pool *pgxpool.Pool) NewsRepositoryInterface {
 	return &NewsRepository{Pool: Pool}
 }
 
-func (r *NewsRepository) Insert(title, content, expires string) (int, error) {
+func (r *NewsRepository) Insert(title, content string, expires time.Time) (int, error) {
 	stmt := `INSERT INTO news (title, content, created, expires)
 	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
-	integerExpires, err := strconv.Atoi(expires)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//integerExpires, err := strconv.Atoi(expires)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//time.Now(), time.Now().AddDate(0, 0, integerExpires)
 	//Using queryRow in order to get ID with the SCAN
-	err = r.Pool.QueryRow(
-		context.Background(), stmt, title, content,
-		time.Now(), time.Now().AddDate(0, 0, integerExpires)).
-		Scan(&id)
+	err := r.Pool.QueryRow(
+		context.Background(), stmt, title, content, time.Now(), expires).Scan(&id)
 	if err != nil {
 		return -1, err
 	}

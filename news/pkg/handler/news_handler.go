@@ -5,7 +5,6 @@ import (
 	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -50,18 +49,11 @@ func (h *newsHandler) ShowNews(c *gin.Context) {
 }
 
 // Shouldn't be in routes
-func (h *newsHandler) CreateNews(title, content, expires string) (int, []string) {
-	v := validator.New()
-	v.MaxLength(title, 100)
-	v.PermittedValues(expires, "365", "7", "1")
-	if !v.Valid() {
-		return -1, v.Errors.Errors
-	}
-
-	id, err := h.service.Save(
-		title, content, expires)
-	if err != nil {
-		return -1, v.Errors.Errors
+func (h *newsHandler) CreateNews(news *domain.News) (int, error) {
+	id, errorSlice := h.service.Save(
+		news)
+	if errorSlice != nil {
+		return -1, errorSlice
 	}
 	return id, nil
 }

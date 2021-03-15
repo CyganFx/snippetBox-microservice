@@ -5,28 +5,34 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
 	"github.com/CyganFx/snippetBox-microservice/news/grpc/news_pb"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/handler"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"time"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 type Server struct {
 	news_pb.UnimplementedNewsServiceServer
-	newsHandler handler.NewsHandlerInterface
+	newsService service.NewsServiceInterface
 }
 
-// TODO Test
 func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*news_pb.NewsGetResponse, error) {
 	log.Printf("GetNews function was invoked with %v \n", req)
 	id := req.GetId()
@@ -70,16 +76,27 @@ func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*new
 
 //TODO test
 func (s *Server) CreateNews(ctx context.Context, req *news_pb.NewsCreateRequest) (*news_pb.NewsCreateResponse, error) {
-	log.Printf("GetNews function was invoked with %v \n", req)
+	log.Printf("CreateNews function was invoked with %v \n", req)
 	title := req.GetTitle()
 	content := req.GetContent()
-	expires := req.GetExpires().String()
+	tempExpires := req.GetExpires()
+	expires, err := ptypes.Timestamp(tempExpires)
+	if err != nil {
+		log.Printf("Failed to convert expires time to timestamp")
+		return nil, err
+	}
 
-	id, errors := s.newsHandler.CreateNews(title, content, expires)
-	if errors != nil {
-		for _, e := range errors {
-			return nil, fmt.Errorf(e)
-		}
+	news := &domain.News{
+		ID:      -1,
+		Title:   title,
+		Content: content,
+		Created: time.Time{},
+		Expires: expires,
+	}
+
+	id, err := s.newsService.Save(news)
+	if err != nil {
+		return nil, err
 	}
 
 	result := &news_pb.NewsCreateResponse{Id: int32(id)}
@@ -93,28 +110,25 @@ func main() {
 		log.Fatalf("Failed to listen:%v", err)
 	}
 
-	s := grpc.NewServer()
+	grpcServer := grpc.NewServer()
 
 	dsn := flag.String("dsn",
 		os.Getenv("db_url"),
 		"PostgreSQL data source name")
-
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime)
+	flag.Parse()
 
 	dbPool, err := pgxpool.Connect(context.Background(), *dsn)
 	if err != nil {
-		errorLog.Fatal(err)
+		log.Fatal(err)
 	}
 	defer dbPool.Close()
 
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
-	helper := helpers.New(errorLog)
-	newsHandler := handler.New(newsService, helper)
 
-	news_pb.RegisterNewsServiceServer(s, &Server{newsHandler: newsHandler})
+	news_pb.RegisterNewsServiceServer(grpcServer, &Server{newsService: newsService})
 	log.Println("Server is running on port:50051")
-	if err := s.Serve(l); err != nil {
+	if err := grpcServer.Serve(l); err != nil {
 		log.Fatalf("failed to serve:%v", err)
 	}
 }
