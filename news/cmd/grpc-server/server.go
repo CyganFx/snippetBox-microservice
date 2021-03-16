@@ -37,7 +37,7 @@ func (s *Server) GetNews(ctx context.Context, req *protobuffs.NewsGetRequest) (*
 	log.Printf("GetNews function was invoked with %v \n", req)
 	id := req.GetId()
 
-	url := fmt.Sprintf("https://localhost:4001/news/%v", id)
+	url := fmt.Sprintf("https://localhost:4011/news/%v", id)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("Failed to get news: %v", err)
@@ -113,7 +113,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	dsn := flag.String("dsn",
-		os.Getenv("db_url"),
+		os.Getenv("db_url_grpc"),
 		"PostgreSQL data source name")
 	flag.Parse()
 

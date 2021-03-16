@@ -1,33 +1,39 @@
 version: "3"
 services:
-  web:
+  news:
     build:
       dockerfile: Dockerfile
-      context: .
+      context: ./news
     ports:
-      - 4000:4000
+      - "4011:4011"
     command: ./myApp
-    environment:
-      #      connection: postgres://postgres:duman070601@host.docker.internal:5432/snippetbox?sslmode=disable
-#      connection: postgres://postgres:duman070601@127.0.0.1:5432/snippetbox
-#      GOOGLE_CLIENT_ID: 904821786927-2c4giicnosn3reko40pqarq02rc1bii5.apps.googleusercontent.com
-#      GOOGLE_CLIENT_SECRET: luLkBao_Zpw0JewdZMQk8-j9
-#      CALLBACK_URL: https://localhost:4001/auth/google/callback
     restart: always
     depends_on:
-      - database
+      - news_db
 
-  database:
+  news_db:
     image: postgres
-    container_name: postgres_container
+    container_name: postgresdb_container
     ports:
       - 5432:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: duman070601
-      POSTGRES_DB: snippetbox
+      POSTGRES_DB: snippetbox_news
     restart: always
+
+#  uesrs_db:
+#    image: postgres
+#    container_name: postgres_container
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - postgres-data:/var/lib/postgresql/data
+#    environment:
+#      POSTGRES_PASSWORD: duman070601
+#      POSTGRES_DB: snippetbox_users
+#    restart: always
 
 volumes:
   postgres-data:
