@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/CyganFx/snippetBox-microservice/news/grpc/news_pb"
+	"github.com/CyganFx/snippetBox-microservice/news/api/grpc/protobuffs"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/repository"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -29,11 +29,11 @@ func init() {
 }
 
 type Server struct {
-	news_pb.UnimplementedNewsServiceServer
+	protobuffs.UnimplementedNewsServiceServer
 	newsService service.NewsServiceInterface
 }
 
-func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*news_pb.NewsGetResponse, error) {
+func (s *Server) GetNews(ctx context.Context, req *protobuffs.NewsGetRequest) (*protobuffs.NewsGetResponse, error) {
 	log.Printf("GetNews function was invoked with %v \n", req)
 	id := req.GetId()
 
@@ -64,7 +64,7 @@ func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*new
 		return nil, err
 	}
 
-	result := &news_pb.NewsGetResponse{
+	result := &protobuffs.NewsGetResponse{
 		Id:      int32(news.ID),
 		Title:   news.Title,
 		Content: news.Content,
@@ -75,7 +75,7 @@ func (s *Server) GetNews(ctx context.Context, req *news_pb.NewsGetRequest) (*new
 }
 
 //TODO test
-func (s *Server) CreateNews(ctx context.Context, req *news_pb.NewsCreateRequest) (*news_pb.NewsCreateResponse, error) {
+func (s *Server) CreateNews(ctx context.Context, req *protobuffs.NewsCreateRequest) (*protobuffs.NewsCreateResponse, error) {
 	log.Printf("CreateNews function was invoked with %v \n", req)
 	title := req.GetTitle()
 	content := req.GetContent()
@@ -99,7 +99,7 @@ func (s *Server) CreateNews(ctx context.Context, req *news_pb.NewsCreateRequest)
 		return nil, err
 	}
 
-	result := &news_pb.NewsCreateResponse{Id: int32(id)}
+	result := &protobuffs.NewsCreateResponse{Id: int32(id)}
 
 	return result, nil
 }
@@ -126,7 +126,7 @@ func main() {
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
 
-	news_pb.RegisterNewsServiceServer(grpcServer, &Server{newsService: newsService})
+	protobuffs.RegisterNewsServiceServer(grpcServer, &Server{newsService: newsService})
 	log.Println("Server is running on port:50051")
 	if err := grpcServer.Serve(l); err != nil {
 		log.Fatalf("failed to serve:%v", err)
