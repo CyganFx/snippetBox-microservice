@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"snippetBox-microservice/news/internal/service"
+	"snippetBox-microservice/news/pkg/domain"
 	"snippetBox-microservice/news/utils/helpers"
 	"strconv"
 )

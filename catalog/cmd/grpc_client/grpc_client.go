@@ -6,7 +6,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 	"log"
-	"snippetBox-microservice/news/api/grpc/protobuffs"
+	"snippetBox-microservice/catalog/api/grpc/protobuffs"
 	"strconv"
 	"time"
 )
@@ -22,11 +22,11 @@ func main() {
 
 	c := protobuffs.NewNewsServiceClient(conn)
 
-	doGetNews(c, 1)
-	//doCreateNews(c)
+	DoGetNews(c, 1)
+	//DoCreateNews(c)
 }
 
-func doGetNews(c protobuffs.NewsServiceClient, id int32) {
+func DoGetNews(c protobuffs.NewsServiceClient, id int32) {
 	ctx := context.Background()
 	request := &protobuffs.NewsGetRequest{Id: id}
 
@@ -38,11 +38,7 @@ func doGetNews(c protobuffs.NewsServiceClient, id int32) {
 		response.Id, response.Title, response.Content, response.Created, response.Expires)
 }
 
-func doCreateNews(c protobuffs.NewsServiceClient) {
-	title := "some title"
-	content := "some content"
-	expires := "7"
-
+func DoCreateNews(c protobuffs.NewsServiceClient, title, content, expires string) {
 	ctx := context.Background()
 	integerExpires, err := strconv.Atoi(expires)
 	if err != nil {

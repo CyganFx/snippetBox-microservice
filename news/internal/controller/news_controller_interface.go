@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/gin-gonic/gin"
+	"snippetBox-microservice/news/pkg/domain"
 )
 
 type NewsControllerInterface interface {

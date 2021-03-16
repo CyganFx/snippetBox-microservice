@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
+	"snippetBox-microservice/news/pkg/domain"
 	"time"
 )
 

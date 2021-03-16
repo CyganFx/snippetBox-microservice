@@ -2,8 +2,12 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"snippetBox-microservice/catalog/api/grpc/protobuffs"
+	"snippetBox-microservice/catalog/cmd/grpc_client"
 	"snippetBox-microservice/catalog/internal/repository"
 	"snippetBox-microservice/catalog/pkg/domain"
 	"snippetBox-microservice/catalog/utils/helpers"
@@ -13,10 +17,11 @@ import (
 type CatalogController struct {
 	repository repository.ICatalogRepository
 	helper     helpers.HelperInterface
+	grpcClient protobuffs.NewsServiceClient
 }
 
-func New(repository repository.ICatalogRepository, helper helpers.HelperInterface) ICatalogController {
-	return &CatalogController{repository: repository, helper: helper}
+func New(repository repository.ICatalogRepository, helper helpers.HelperInterface, grpcClient protobuffs.NewsServiceClient) ICatalogController {
+	return &CatalogController{repository: repository, helper: helper, grpcClient: grpcClient}
 }
 
 func (c2 CatalogController) ShowProduct(c *gin.Context) {
@@ -62,10 +67,33 @@ func (c2 CatalogController) ShowProductsByCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, productsByCategory)
 }
 
-func (c2 CatalogController) CreateProduct(prod *domain.Product) (int, error) {
-	id, errorsSlice := c2.repository.Insert(prod.Title, prod.Category, prod.Description, prod.Price)
-	if errorsSlice != nil {
-		return -1, errorsSlice
+func (c2 CatalogController) CreateProduct(c *gin.Context) {
+	var product domain.Product
+
+	err := c.BindJSON(&product)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "sorry, bad request")
 	}
-	return id, nil
+
+	title := product.Title
+	category := product.Category
+	description := product.Description
+	price := product.Price
+
+	id, err := c2.repository.Insert(title, category, description, price)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "insert error")
+	}
+	log.Println("Grpc client is invoked")
+
+	newsTitle := "We created a new product"
+	newsContent := "Product " + title + " that is in " + category + " category " + "with price: " + fmt.Sprintf("%f", price)
+	expires := "7"
+	grpcClient := c2.grpcClient
+
+	grpc_client.DoCreateNews(grpcClient, newsTitle, newsContent, expires)
+
+	c.JSON(200, gin.H{
+		"id": id,
+	})
 }

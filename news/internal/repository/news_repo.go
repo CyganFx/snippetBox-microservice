@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"snippetBox-microservice/news/pkg/domain"
 	"time"
 )
 

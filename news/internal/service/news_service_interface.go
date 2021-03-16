@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
+	"snippetBox-microservice/news/pkg/domain"
 )
 
 type NewsServiceInterface interface {

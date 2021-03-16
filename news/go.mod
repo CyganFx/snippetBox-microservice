@@ -1,4 +1,4 @@
-module github.com/CyganFx/snippetBox-microservice/news
+module snippetBox-microservice/news
 
 go 1.15
 

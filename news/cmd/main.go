@@ -55,13 +55,13 @@ func main() {
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
 	helper := helpers.New(errorLog)
-	newsHandler := controller.New(newsService, helper)
+	newsController := controller.New(newsService, helper)
 
 	app := &application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		session:        session,
-		newsController: newsHandler,
+		newsController: newsController,
 	}
 
 	tlsConfig := &tls.Config{
