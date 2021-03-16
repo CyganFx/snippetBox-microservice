@@ -26,7 +26,7 @@ func main() {
 	//DoCreateNews(c)
 }
 
-func DoGetNews(c protobuffs.NewsServiceClient, id int32) {
+func DoGetNews(c protobuffs.NewsServiceClient, id int32) *protobuffs.NewsGetResponse {
 	ctx := context.Background()
 	request := &protobuffs.NewsGetRequest{Id: id}
 
@@ -36,9 +36,11 @@ func DoGetNews(c protobuffs.NewsServiceClient, id int32) {
 	}
 	log.Printf("response from GetNews: id: %v, title: %s, content: %s, created: %v, expires: %v  ",
 		response.Id, response.Title, response.Content, response.Created, response.Expires)
+
+	return response
 }
 
-func DoCreateNews(c protobuffs.NewsServiceClient, title, content, expires string) {
+func DoCreateNews(c protobuffs.NewsServiceClient, title, content, expires string) *protobuffs.NewsCreateResponse {
 	ctx := context.Background()
 	integerExpires, err := strconv.Atoi(expires)
 	if err != nil {
@@ -64,4 +66,6 @@ func DoCreateNews(c protobuffs.NewsServiceClient, title, content, expires string
 
 	log.Printf("response from CreateNews: id: %v",
 		response.Id)
+
+	return response
 }

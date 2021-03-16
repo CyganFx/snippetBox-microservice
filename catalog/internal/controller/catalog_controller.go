@@ -80,7 +80,7 @@ func (c2 CatalogController) CreateProduct(c *gin.Context) {
 	description := product.Description
 	price := product.Price
 
-	id, err := c2.repository.Insert(title, category, description, price)
+	_, err = c2.repository.Insert(title, category, description, price)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "insert error")
 	}
@@ -91,9 +91,9 @@ func (c2 CatalogController) CreateProduct(c *gin.Context) {
 	expires := "7"
 	grpcClient := c2.grpcClient
 
-	grpc_client.DoCreateNews(grpcClient, newsTitle, newsContent, expires)
+	news_id := grpc_client.DoCreateNews(grpcClient, newsTitle, newsContent, expires)
 
-	c.JSON(200, gin.H{
-		"id": id,
-	})
+	response := grpc_client.DoGetNews(grpcClient, news_id.Id)
+
+	c.JSON(200, response)
 }
