@@ -4,10 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
-	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/handler"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/controller"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/repository"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
+	"github.com/CyganFx/snippetBox-microservice/news/utils/helpers"
 	"github.com/golangcollege/sessions"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -21,7 +21,7 @@ type application struct {
 	errorLog    *log.Logger
 	infoLog     *log.Logger
 	session     *sessions.Session
-	newsHandler handler.NewsHandlerInterface
+	newsHandler controller.NewsControllerInterface
 }
 
 func init() {
@@ -55,7 +55,7 @@ func main() {
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
 	helper := helpers.New(errorLog)
-	newsHandler := handler.New(newsService, helper)
+	newsHandler := controller.New(newsService, helper)
 
 	app := &application{
 		errorLog:    errorLog,
@@ -80,6 +80,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting  server on %v", *addr)
-	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	err = srv.ListenAndServeTLS("./crypto/tls/cert.pem", "./crypto/tls/key.pem")
 	errorLog.Fatal(err)
 }

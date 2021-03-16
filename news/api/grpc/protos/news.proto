@@ -2,9 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package grpc;
+package protos;
 
-option go_package = "github.com\\CyganFx\\snippetBox-microservice\\grpc\\news_pb;news_pb";
+option go_package = "github.com\\CyganFx\\snippetBox-microservice\\news\\api\\grpc\\protobuffs;protobuffs";
 
 message NewsGetRequest {
   int32 Id = 1;

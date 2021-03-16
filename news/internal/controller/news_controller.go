@@ -1,25 +1,25 @@
-package handler
+package controller
 
 import (
 	"errors"
-	"github.com/CyganFx/snippetBox-microservice/news/cmd/helpers"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/service"
+	"github.com/CyganFx/snippetBox-microservice/news/utils/helpers"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
-type newsHandler struct {
+type newsController struct {
 	service service.NewsServiceInterface
 	helper  helpers.HelperInterface
 }
 
-func New(service service.NewsServiceInterface, helper helpers.HelperInterface) NewsHandlerInterface {
-	return &newsHandler{service: service, helper: helper}
+func New(service service.NewsServiceInterface, helper helpers.HelperInterface) NewsControllerInterface {
+	return &newsController{service: service, helper: helper}
 }
 
-func (h *newsHandler) Home(c *gin.Context) {
+func (h *newsController) Home(c *gin.Context) {
 	news, err := h.service.Latest()
 	if err != nil {
 		h.helper.ServerError(c, err)
@@ -28,7 +28,7 @@ func (h *newsHandler) Home(c *gin.Context) {
 	c.JSON(http.StatusOK, news)
 }
 
-func (h *newsHandler) ShowNews(c *gin.Context) {
+func (h *newsController) ShowNews(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id < 1 {
 		h.helper.NotFound(c)
@@ -49,7 +49,7 @@ func (h *newsHandler) ShowNews(c *gin.Context) {
 }
 
 // Shouldn't be in routes
-func (h *newsHandler) CreateNews(news *domain.News) (int, error) {
+func (h *newsController) CreateNews(news *domain.News) (int, error) {
 	id, errorSlice := h.service.Save(
 		news)
 	if errorSlice != nil {

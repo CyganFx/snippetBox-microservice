@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
+	"github.com/CyganFx/snippetBox-microservice/news/internal/repository"
 	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/repository"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/validator"
+	"github.com/CyganFx/snippetBox-microservice/news/utils/validator"
 )
 
 type NewsService struct {

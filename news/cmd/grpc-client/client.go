@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/CyganFx/snippetBox-microservice/news/grpc/news_pb"
+	"github.com/CyganFx/snippetBox-microservice/news/api/grpc/protobuffs"
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 	"log"
@@ -20,15 +20,15 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := news_pb.NewNewsServiceClient(conn)
+	c := protobuffs.NewNewsServiceClient(conn)
 
 	doGetNews(c, 1)
-	doCreateNews(c)
+	//doCreateNews(c)
 }
 
-func doGetNews(c news_pb.NewsServiceClient, id int32) {
+func doGetNews(c protobuffs.NewsServiceClient, id int32) {
 	ctx := context.Background()
-	request := &news_pb.NewsGetRequest{Id: id}
+	request := &protobuffs.NewsGetRequest{Id: id}
 
 	response, err := c.GetNews(ctx, request)
 	if err != nil {
@@ -38,7 +38,7 @@ func doGetNews(c news_pb.NewsServiceClient, id int32) {
 		response.Id, response.Title, response.Content, response.Created, response.Expires)
 }
 
-func doCreateNews(c news_pb.NewsServiceClient) {
+func doCreateNews(c protobuffs.NewsServiceClient) {
 	title := "some title"
 	content := "some content"
 	expires := "7"
@@ -55,7 +55,7 @@ func doCreateNews(c news_pb.NewsServiceClient) {
 		log.Fatal("Failed to convert expires time to timestamp")
 	}
 
-	request := &news_pb.NewsCreateRequest{
+	request := &protobuffs.NewsCreateRequest{
 		Title:   title,
 		Content: content,
 		Expires: expiresTimeTimestamp,
