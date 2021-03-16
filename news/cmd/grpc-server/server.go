@@ -5,10 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/CyganFx/snippetBox-microservice/news/api/grpc/protobuffs"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/repository"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -18,6 +14,10 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"snippetBox-microservice/news/api/grpc/protobuffs"
+	"snippetBox-microservice/news/internal/repository"
+	"snippetBox-microservice/news/internal/service"
+	"snippetBox-microservice/news/pkg/domain"
 	"time"
 )
 

@@ -2,11 +2,10 @@ package controller
 
 import (
 	"errors"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
-	"github.com/CyganFx/snippetBox-microservice/news/pkg/domain"
-	"github.com/CyganFx/snippetBox-microservice/news/utils/helpers"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"snippetBox-microservice/news/internal/service"
+	"snippetBox-microservice/news/utils/helpers"
 	"strconv"
 )
 
