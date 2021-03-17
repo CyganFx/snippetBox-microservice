@@ -57,7 +57,7 @@ func (c2 CatalogController) Home(c *gin.Context) {
 }
 
 func (c2 CatalogController) ShowProductsByCategory(c *gin.Context) {
-	category := c.Param("category")
+	category := c.Param("id")
 	productsByCategory, err := c2.repository.GetByCategory(category)
 
 	if err != nil {

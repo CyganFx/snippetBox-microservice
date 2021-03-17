@@ -19,11 +19,11 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	session  *sessions.Session
-	templateCache  map[string]*template.Template
-	userService    service.UserServiceInterface
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	session       *sessions.Session
+	templateCache map[string]*template.Template
+	userService   service.UserServiceInterface
 }
 
 func init() {
@@ -70,11 +70,11 @@ func main() {
 	userService := service.NewUserService(userRepository)
 
 	app := &application{
-		errorLog:       errorLog,
-		infoLog:        infoLog,
-		session:        session,
-		userService:    userService,
-		templateCache:  templateCache,
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		session:       session,
+		userService:   userService,
+		templateCache: templateCache,
 	}
 
 	tlsConfig := &tls.Config{

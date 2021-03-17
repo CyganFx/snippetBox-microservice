@@ -19,11 +19,6 @@ func (r *NewsRepository) Insert(title, content string, expires time.Time) (int, 
 	stmt := `INSERT INTO news (title, content, created, expires)
 	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
-	//integerExpires, err := strconv.Atoi(expires)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//time.Now(), time.Now().AddDate(0, 0, integerExpires)
 	//Using queryRow in order to get ID with the SCAN
 	err := r.Pool.QueryRow(
 		context.Background(), stmt, title, content, time.Now(), expires).Scan(&id)

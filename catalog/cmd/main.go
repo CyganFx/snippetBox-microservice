@@ -33,7 +33,7 @@ func init() {
 func main() {
 	addr := flag.String("addr", ":4012", "HTTP network address")
 	dsn := flag.String("dsn",
-		os.Getenv("db_url_grpc"),
+		os.Getenv("db_url"),
 		"PostgreSQL data source name")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -79,6 +79,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting  server on %v", *addr)
-	err = srv.ListenAndServeTLS(os.Getenv("tls_cert_dir"), os.Getenv("tls_key_dir"))
+	err = srv.ListenAndServeTLS("./crypto/tls/cert.pem", "./crypto/tls/key.pem")
 	errorLog.Fatal(err)
 }

@@ -4,6 +4,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./news
+    container_name: news_container
     ports:
       - "4011:4011"
     command: ./myApp
@@ -11,11 +12,35 @@ services:
     depends_on:
       - news_db
 
+  catalog:
+    build:
+      dockerfile: Dockerfile
+      context: ./catalog
+    container_name: catalog_container
+    ports:
+      - "4012:4012"
+    command: ./myApp
+    restart: always
+    depends_on:
+      - catalog_db
+
+  basket:
+    build:
+      dockerfile: Dockerfile
+      context: ./basket
+    container_name: basket_container
+    ports:
+      - "8000:8000"
+    command: ./myApp
+    restart: always
+    depends_on:
+      - basket_db
+
   news_db:
     image: postgres
-    container_name: postgresdb_container
+    container_name: news_db
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
@@ -23,17 +48,30 @@ services:
       POSTGRES_DB: snippetbox_news
     restart: always
 
-#  uesrs_db:
-#    image: postgres
-#    container_name: postgres_container
-#    ports:
-#      - 5432:5432
-#    volumes:
-#      - postgres-data:/var/lib/postgresql/data
-#    environment:
-#      POSTGRES_PASSWORD: duman070601
-#      POSTGRES_DB: snippetbox_users
-#    restart: always
+  catalog_db:
+    image: postgres
+    container_name: catalog_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: duman070601
+      POSTGRES_DB: snippetbox_catalog
+    restart: always
+
+  basket_db:
+    image: mysql/mysql-server
+    container_name: basket_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: duman070601
+      MYSQL_DATABASE: articles
+    restart: always
 
 volumes:
   postgres-data:
+  db_data:

@@ -32,9 +32,10 @@ type Server struct {
 
 func (s *Server) SendProduct(ctx context.Context, req *protobuffs.ProductSendRequest) (*protobuffs.ProductSendResponse, error) {
 	log.Printf("SendProduct function was invoked with %v \n", req)
+	fmt.Println("Hello, send product was invoked")
 	id := req.GetId()
 
-	url := fmt.Sprintf("https://localhost:4012/catalog/%v", id)
+	url := fmt.Sprintf("https://localhost:4012/catalog/product/%v", id)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("Failed to get product: %v", err)

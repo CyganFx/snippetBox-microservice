@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request)  {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 

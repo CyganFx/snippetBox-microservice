@@ -4,24 +4,24 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/controller"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/repository"
-	"github.com/CyganFx/snippetBox-microservice/news/internal/service"
-	"github.com/CyganFx/snippetBox-microservice/news/utils/helpers"
 	"github.com/golangcollege/sessions"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+	"snippetBox-microservice/news/internal/controller"
+	"snippetBox-microservice/news/internal/repository"
+	"snippetBox-microservice/news/internal/service"
+	"snippetBox-microservice/news/utils/helpers"
 	"time"
 )
 
 type application struct {
-	errorLog    *log.Logger
-	infoLog     *log.Logger
-	session     *sessions.Session
-	newsHandler controller.NewsControllerInterface
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	session        *sessions.Session
+	newsController controller.NewsControllerInterface
 }
 
 func init() {
@@ -32,7 +32,7 @@ func init() {
 }
 
 func main() {
-	addr := flag.String("addr", ":4001", "HTTP network address")
+	addr := flag.String("addr", ":4011", "HTTP network address")
 	dsn := flag.String("dsn",
 		os.Getenv("db_url"),
 		"PostgreSQL data source name")
@@ -55,13 +55,13 @@ func main() {
 	newsRepository := repository.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepository)
 	helper := helpers.New(errorLog)
-	newsHandler := controller.New(newsService, helper)
+	newsController := controller.New(newsService, helper)
 
 	app := &application{
-		errorLog:    errorLog,
-		infoLog:     infoLog,
-		session:     session,
-		newsHandler: newsHandler,
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		session:        session,
+		newsController: newsController,
 	}
 
 	tlsConfig := &tls.Config{

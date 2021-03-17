@@ -21,7 +21,7 @@ func SetupDB() *sql.DB {
 	dbUser := os.Getenv("DB_USERNAME")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")*/
-	db, err := sql.Open("mysql", "root"+":limara2015"+""+"@/"+"gocommerce")
+	db, err := sql.Open("mysql", "root"+":duman070601"+""+"@/"+"articles")
 	if err != nil {
 		panic(err.Error())
 	}

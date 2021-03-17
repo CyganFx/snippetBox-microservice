@@ -10,6 +10,7 @@ import (
 	"snippetBox-microservice/basket/api/grpc/protobuffs"
 	mysqldb "snippetBox-microservice/basket/connection"
 	"snippetBox-microservice/basket/models"
+	"strconv"
 	"time"
 )
 
@@ -83,24 +84,32 @@ func WishListFromCatalog(c *gin.Context) {
 	} else {
 		db := mysqldb.SetupDB()
 
-		WishRows, err := db.Query("SELECT product_id,id FROM tbl_wishlist where user_id=?", userid)
-
+		WishRows, err := db.Query("SELECT product_id FROM tbl_wishlist where user_id=?", userid)
+		fmt.Println("Wish rows", *WishRows)
 		if err != nil {
 			fmt.Println(err)
 		}
+		defer WishRows.Close()
+		//defer db.Close()
 
-		wishlist := models.ProductModel{}
-		res1 := []models.ProductModel{}
+		var res1 []models.ProductModel
 
 		for WishRows.Next() {
-			var product_id int
-			_ = WishRows.Scan(&product_id)
+			//fmt.Println("Wish rows", WishRows)
+			//fmt.Println("Wish rows next: ", WishRows.Next())
+			wishlist := models.ProductModel{}
+			//var product_id int
+			_ = WishRows.Scan(&wishlist.ID)
 
-			request := &protobuffs.ProductSendRequest{Id: int32(product_id)}
+			fmt.Println("Product id: ", wishlist.ID)
+
+			request := &protobuffs.ProductSendRequest{Id: int32(wishlist.ID)}
+			fmt.Println("Request id: ", request.Id)
 			response, err := grpc_client.SendProduct(context.Background(), request)
 			if err != nil {
 				log.Fatalf("error while calling SendProduct %v", err)
 			}
+			fmt.Println("Response title: ", response.Title)
 			wishlist.ID = int(response.Id)
 			wishlist.Title = response.Title
 			wishlist.Category = response.Category
@@ -113,8 +122,6 @@ func WishListFromCatalog(c *gin.Context) {
 		name := session.Values["firstname"]
 
 		c.JSON(200, gin.H{"wishlist": res1, "name": name})
-
-		defer db.Close()
 
 	}
 }
@@ -171,8 +178,19 @@ func Wishlist(c *gin.Context) {
 }
 
 func Deletewishlist(c *gin.Context) {
+	var wishList models.Wishlist
+
+	err := c.BindJSON(&wishList)
+	if err != nil {
+		panic(err.Error())
+	}
+	wid := wishList.ID
+
 	db := mysqldb.SetupDB()
-	wid := c.Query("wid")
+	wid, err = strconv.Atoi(c.Query("wid"))
+	if err != nil {
+		log.Fatal("error in delete wish list")
+	}
 	fmt.Println("wid", wid)
 	delWish, err := db.Prepare("DELETE FROM  tbl_wishlist WHERE id=?")
 	if err != nil {
@@ -182,7 +200,6 @@ func Deletewishlist(c *gin.Context) {
 
 	defer db.Close()
 	c.JSON(301, "/wishlist")
-
 }
 func Deletewishlistall(c *gin.Context) {
 	session, _ := store.Get(c.Request, "mysession")
