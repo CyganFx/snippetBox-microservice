@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CatalogServiceClient interface {
-	SendProduct(ctx context.Context, in *ProductGetRequest, opts ...grpc.CallOption) (*ProductGetResponse, error)
+	SendProduct(ctx context.Context, in *ProductSendRequest, opts ...grpc.CallOption) (*ProductSendResponse, error)
 }
 
 type catalogServiceClient struct {
@@ -29,8 +29,8 @@ func NewCatalogServiceClient(cc grpc.ClientConnInterface) CatalogServiceClient {
 	return &catalogServiceClient{cc}
 }
 
-func (c *catalogServiceClient) SendProduct(ctx context.Context, in *ProductGetRequest, opts ...grpc.CallOption) (*ProductGetResponse, error) {
-	out := new(ProductGetResponse)
+func (c *catalogServiceClient) SendProduct(ctx context.Context, in *ProductSendRequest, opts ...grpc.CallOption) (*ProductSendResponse, error) {
+	out := new(ProductSendResponse)
 	err := c.cc.Invoke(ctx, "/protos.CatalogService/SendProduct", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (c *catalogServiceClient) SendProduct(ctx context.Context, in *ProductGetRe
 // All implementations must embed UnimplementedCatalogServiceServer
 // for forward compatibility
 type CatalogServiceServer interface {
-	SendProduct(context.Context, *ProductGetRequest) (*ProductGetResponse, error)
+	SendProduct(context.Context, *ProductSendRequest) (*ProductSendResponse, error)
 	mustEmbedUnimplementedCatalogServiceServer()
 }
 
@@ -50,7 +50,7 @@ type CatalogServiceServer interface {
 type UnimplementedCatalogServiceServer struct {
 }
 
-func (UnimplementedCatalogServiceServer) SendProduct(context.Context, *ProductGetRequest) (*ProductGetResponse, error) {
+func (UnimplementedCatalogServiceServer) SendProduct(context.Context, *ProductSendRequest) (*ProductSendResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendProduct not implemented")
 }
 func (UnimplementedCatalogServiceServer) mustEmbedUnimplementedCatalogServiceServer() {}
@@ -67,7 +67,7 @@ func RegisterCatalogServiceServer(s grpc.ServiceRegistrar, srv CatalogServiceSer
 }
 
 func _CatalogService_SendProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProductGetRequest)
+	in := new(ProductSendRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func _CatalogService_SendProduct_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/protos.CatalogService/SendProduct",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).SendProduct(ctx, req.(*ProductGetRequest))
+		return srv.(CatalogServiceServer).SendProduct(ctx, req.(*ProductSendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
