@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package protos;
+
+option go_package = "snippetBox-microservice\\basket\\api\\grpc\\protobuffs;protobuffs";
+
+message NewsGetRequest {
+  int32 Id = 1;
+}
+
+message NewsGetResponse {
+  int32 Id = 1;
+  string Title = 2;
+  string Content = 3;
+  google.protobuf.Timestamp Expires = 4;
+  google.protobuf.Timestamp Created = 5;
+}
+
+message NewsCreateRequest {
+  string Title = 1;
+  string Content = 2;
+  google.protobuf.Timestamp Expires = 3;
+}
+
+message NewsCreateResponse {
+  int32 Id = 1;
+}
+
+service NewsService {
+  rpc GetNews(NewsGetRequest) returns(NewsGetResponse) {};
+  rpc CreateNews(NewsCreateRequest) returns(NewsCreateResponse) {};
+}
