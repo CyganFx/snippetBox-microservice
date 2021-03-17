@@ -29,6 +29,6 @@ message NewsCreateResponse {
 }
 
 service NewsService {
-  rpc GetNews(NewsGetRequest) returns(NewsGetResponse) {};
+  rpc SendNews(NewsGetRequest) returns(NewsGetResponse) {};
   rpc CreateNews(NewsCreateRequest) returns(NewsCreateResponse) {};
 }

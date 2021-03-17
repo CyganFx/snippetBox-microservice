@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 
 package protos;
 
-option go_package = "snippetBox-microservice\\catalog\\api\\grpc\\protobuffs;protobuffs";
+option go_package = "github.com\\CyganFx\\snippetBox-microservice\\news\\api\\grpc\\protobuffs;protobuffs";
 
 message NewsGetRequest {
   int32 Id = 1;
@@ -29,6 +29,6 @@ message NewsCreateResponse {
 }
 
 service NewsService {
-  rpc GetNews(NewsGetRequest) returns(NewsGetResponse) {};
+  rpc SendNews(NewsGetRequest) returns(NewsGetResponse) {};
   rpc CreateNews(NewsCreateRequest) returns(NewsCreateResponse) {};
 }

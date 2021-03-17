@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang/protobuf/ptypes"
 	"log"
 	"net/http"
 	"snippetBox-microservice/catalog/api/grpc/protobuffs"
@@ -72,7 +73,7 @@ func (c2 CatalogController) CreateProduct(c *gin.Context) {
 
 	err := c.BindJSON(&product)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, "sorry, bad request")
+		c2.helper.ClientErrorWithDescription(c, http.StatusBadRequest, "type normal data please")
 	}
 
 	title := product.Title
@@ -82,7 +83,7 @@ func (c2 CatalogController) CreateProduct(c *gin.Context) {
 
 	_, err = c2.repository.Insert(title, category, description, price)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "insert error")
+		c2.helper.ServerError(c, err)
 	}
 	log.Println("Grpc client is invoked")
 
@@ -91,9 +92,27 @@ func (c2 CatalogController) CreateProduct(c *gin.Context) {
 	expires := "7"
 	grpcClient := c2.grpcClient
 
-	news_id := grpc_client.DoCreateNews(grpcClient, newsTitle, newsContent, expires)
+	createNewsResponse := grpc_client.DoCreateNews(grpcClient, newsTitle, newsContent, expires)
 
-	response := grpc_client.DoGetNews(grpcClient, news_id.Id)
+	getNewsResponse := grpc_client.DoGetNews(grpcClient, createNewsResponse.Id)
 
-	c.JSON(200, response)
+	timeTimeCreated, err := ptypes.Timestamp(getNewsResponse.Created)
+	if err != nil {
+		c2.helper.ServerError(c, err)
+	}
+	formattedCreated := c2.helper.HumanDate(timeTimeCreated)
+
+	timeTimeExpires, err := ptypes.Timestamp(getNewsResponse.Expires)
+	if err != nil {
+		c2.helper.ServerError(c, err)
+	}
+	formattedExpires := c2.helper.HumanDate(timeTimeExpires)
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":      getNewsResponse.Id,
+		"title":   getNewsResponse.Title,
+		"content": getNewsResponse.Content,
+		"created": formattedCreated,
+		"expires": formattedExpires,
+	})
 }

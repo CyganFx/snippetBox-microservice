@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NewsServiceClient interface {
-	GetNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error)
+	SendNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error)
 	CreateNews(ctx context.Context, in *NewsCreateRequest, opts ...grpc.CallOption) (*NewsCreateResponse, error)
 }
 
@@ -30,9 +30,9 @@ func NewNewsServiceClient(cc grpc.ClientConnInterface) NewsServiceClient {
 	return &newsServiceClient{cc}
 }
 
-func (c *newsServiceClient) GetNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error) {
+func (c *newsServiceClient) SendNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error) {
 	out := new(NewsGetResponse)
-	err := c.cc.Invoke(ctx, "/protos.NewsService/GetNews", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protos.NewsService/SendNews", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *newsServiceClient) CreateNews(ctx context.Context, in *NewsCreateReques
 // All implementations must embed UnimplementedNewsServiceServer
 // for forward compatibility
 type NewsServiceServer interface {
-	GetNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error)
+	SendNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error)
 	CreateNews(context.Context, *NewsCreateRequest) (*NewsCreateResponse, error)
 	mustEmbedUnimplementedNewsServiceServer()
 }
@@ -61,8 +61,8 @@ type NewsServiceServer interface {
 type UnimplementedNewsServiceServer struct {
 }
 
-func (UnimplementedNewsServiceServer) GetNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNews not implemented")
+func (UnimplementedNewsServiceServer) SendNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendNews not implemented")
 }
 func (UnimplementedNewsServiceServer) CreateNews(context.Context, *NewsCreateRequest) (*NewsCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNews not implemented")
@@ -80,20 +80,20 @@ func RegisterNewsServiceServer(s grpc.ServiceRegistrar, srv NewsServiceServer) {
 	s.RegisterService(&NewsService_ServiceDesc, srv)
 }
 
-func _NewsService_GetNews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _NewsService_SendNews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewsGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NewsServiceServer).GetNews(ctx, in)
+		return srv.(NewsServiceServer).SendNews(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.NewsService/GetNews",
+		FullMethod: "/protos.NewsService/SendNews",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NewsServiceServer).GetNews(ctx, req.(*NewsGetRequest))
+		return srv.(NewsServiceServer).SendNews(ctx, req.(*NewsGetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -124,8 +124,8 @@ var NewsService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*NewsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetNews",
-			Handler:    _NewsService_GetNews_Handler,
+			MethodName: "SendNews",
+			Handler:    _NewsService_SendNews_Handler,
 		},
 		{
 			MethodName: "CreateNews",

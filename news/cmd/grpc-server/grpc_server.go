@@ -33,7 +33,8 @@ type Server struct {
 	newsService service.NewsServiceInterface
 }
 
-func (s *Server) GetNews(ctx context.Context, req *protobuffs.NewsGetRequest) (*protobuffs.NewsGetResponse, error) {
+//Actually gives news data
+func (s *Server) SendNews(ctx context.Context, req *protobuffs.NewsGetRequest) (*protobuffs.NewsGetResponse, error) {
 	log.Printf("GetNews function was invoked with %v \n", req)
 	id := req.GetId()
 

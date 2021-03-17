@@ -2,35 +2,18 @@ package grpc_client
 
 import (
 	"context"
-	"fmt"
 	"github.com/golang/protobuf/ptypes"
-	"google.golang.org/grpc"
 	"log"
 	"snippetBox-microservice/catalog/api/grpc/protobuffs"
 	"strconv"
 	"time"
 )
 
-func main() {
-	fmt.Println("Hello I'm a client")
-
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("could not connect: %v", err)
-	}
-	defer conn.Close()
-
-	c := protobuffs.NewNewsServiceClient(conn)
-
-	DoGetNews(c, 1)
-	//DoCreateNews(c)
-}
-
 func DoGetNews(c protobuffs.NewsServiceClient, id int32) *protobuffs.NewsGetResponse {
 	ctx := context.Background()
 	request := &protobuffs.NewsGetRequest{Id: id}
 
-	response, err := c.GetNews(ctx, request)
+	response, err := c.SendNews(ctx, request)
 	if err != nil {
 		log.Fatalf("error while calling GetNews %v", err)
 	}
