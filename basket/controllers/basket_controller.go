@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"log"
+	"snippetBox-microservice/basket/api/grpc/protobuffs"
 	mysqldb "snippetBox-microservice/basket/connection"
 	"snippetBox-microservice/basket/models"
 	"time"
@@ -57,6 +61,62 @@ func Addwishlist(c *gin.Context) {
 		defer db.Close()
 	}
 
+}
+
+func WishListFromCatalog(c *gin.Context) {
+
+	//grpc client connection
+	conn, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	defer conn.Close()
+
+	grpc_client := protobuffs.NewCatalogServiceClient(conn)
+
+	session, _ := store.Get(c.Request, "mysession")
+
+	userid := session.Values["userid"]
+	fmt.Println("userid", userid)
+	if userid == nil {
+		c.JSON(301, "/viewwishlist")
+	} else {
+		db := mysqldb.SetupDB()
+
+		WishRows, err := db.Query("SELECT product_id,id FROM tbl_wishlist where user_id=?", userid)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		wishlist := models.ProductModel{}
+		res1 := []models.ProductModel{}
+
+		for WishRows.Next() {
+			var product_id int
+			_ = WishRows.Scan(&product_id)
+
+			request := &protobuffs.ProductSendRequest{Id: int32(product_id)}
+			response, err := grpc_client.SendProduct(context.Background(), request)
+			if err != nil {
+				log.Fatalf("error while calling SendProduct %v", err)
+			}
+			wishlist.ID = int(response.Id)
+			wishlist.Title = response.Title
+			wishlist.Category = response.Category
+			wishlist.Description = response.Description
+			wishlist.Price = response.Price
+
+			res1 = append(res1, wishlist)
+		}
+
+		name := session.Values["firstname"]
+
+		c.JSON(200, gin.H{"wishlist": res1, "name": name})
+
+		defer db.Close()
+
+	}
 }
 
 func Wishlist(c *gin.Context) {

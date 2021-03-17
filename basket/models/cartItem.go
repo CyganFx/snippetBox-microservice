@@ -14,3 +14,11 @@ type Products struct {
 	Value         int
 	Productcount  int
 }
+
+type ProductModel struct {
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+}
