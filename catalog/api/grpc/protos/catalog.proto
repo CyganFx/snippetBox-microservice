@@ -19,5 +19,5 @@ message ProductGetResponse {
 }
 
 service CatalogService {
-  rpc GetProduct(ProductGetRequest) returns(ProductGetResponse) {};
+  rpc SendProduct(ProductGetRequest) returns(ProductGetResponse) {};
 }
