@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-func DoGetNews(c protobuffs.NewsServiceClient, id int32) *protobuffs.NewsGetResponse {
+func DoGetNews(c protobuffs.NewsServiceClient, id int32) *protobuffs.NewsSendResponse {
 	ctx := context.Background()
-	request := &protobuffs.NewsGetRequest{Id: id}
+	request := &protobuffs.NewsSendRequest{Id: id}
 
 	response, err := c.SendNews(ctx, request)
 	if err != nil {

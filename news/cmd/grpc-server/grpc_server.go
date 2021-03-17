@@ -75,7 +75,6 @@ func (s *Server) SendNews(ctx context.Context, req *protobuffs.NewsGetRequest) (
 	return result, nil
 }
 
-//TODO test
 func (s *Server) CreateNews(ctx context.Context, req *protobuffs.NewsCreateRequest) (*protobuffs.NewsCreateResponse, error) {
 	log.Printf("CreateNews function was invoked with %v \n", req)
 	title := req.GetTitle()

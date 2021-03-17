@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NewsServiceClient interface {
-	SendNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error)
+	SendNews(ctx context.Context, in *NewsSendRequest, opts ...grpc.CallOption) (*NewsSendResponse, error)
 	CreateNews(ctx context.Context, in *NewsCreateRequest, opts ...grpc.CallOption) (*NewsCreateResponse, error)
 }
 
@@ -30,8 +30,8 @@ func NewNewsServiceClient(cc grpc.ClientConnInterface) NewsServiceClient {
 	return &newsServiceClient{cc}
 }
 
-func (c *newsServiceClient) SendNews(ctx context.Context, in *NewsGetRequest, opts ...grpc.CallOption) (*NewsGetResponse, error) {
-	out := new(NewsGetResponse)
+func (c *newsServiceClient) SendNews(ctx context.Context, in *NewsSendRequest, opts ...grpc.CallOption) (*NewsSendResponse, error) {
+	out := new(NewsSendResponse)
 	err := c.cc.Invoke(ctx, "/protos.NewsService/SendNews", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (c *newsServiceClient) CreateNews(ctx context.Context, in *NewsCreateReques
 // All implementations must embed UnimplementedNewsServiceServer
 // for forward compatibility
 type NewsServiceServer interface {
-	SendNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error)
+	SendNews(context.Context, *NewsSendRequest) (*NewsSendResponse, error)
 	CreateNews(context.Context, *NewsCreateRequest) (*NewsCreateResponse, error)
 	mustEmbedUnimplementedNewsServiceServer()
 }
@@ -61,7 +61,7 @@ type NewsServiceServer interface {
 type UnimplementedNewsServiceServer struct {
 }
 
-func (UnimplementedNewsServiceServer) SendNews(context.Context, *NewsGetRequest) (*NewsGetResponse, error) {
+func (UnimplementedNewsServiceServer) SendNews(context.Context, *NewsSendRequest) (*NewsSendResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendNews not implemented")
 }
 func (UnimplementedNewsServiceServer) CreateNews(context.Context, *NewsCreateRequest) (*NewsCreateResponse, error) {
@@ -81,7 +81,7 @@ func RegisterNewsServiceServer(s grpc.ServiceRegistrar, srv NewsServiceServer) {
 }
 
 func _NewsService_SendNews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewsGetRequest)
+	in := new(NewsSendRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func _NewsService_SendNews_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/protos.NewsService/SendNews",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NewsServiceServer).SendNews(ctx, req.(*NewsGetRequest))
+		return srv.(NewsServiceServer).SendNews(ctx, req.(*NewsSendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
