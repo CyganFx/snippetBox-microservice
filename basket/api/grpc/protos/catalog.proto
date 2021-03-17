@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 package protos;
 
 option go_package = "snippetBox-microservice\\basket\\api\\grpc\\protobuffs;protobuffs";
