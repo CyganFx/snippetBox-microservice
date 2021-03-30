@@ -1,13 +1,12 @@
 package routes
 
 import (
-	"database/sql"
 	"snippetBox-microservice/basket/controllers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(db *sql.DB) *gin.Engine {
+func SetupRoutes() *gin.Engine {
 
 	r := gin.Default()
 

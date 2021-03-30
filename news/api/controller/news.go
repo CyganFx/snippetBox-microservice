@@ -6,41 +6,41 @@ import (
 	"net/http"
 	"snippetBox-microservice/news/internal/service"
 	"snippetBox-microservice/news/pkg/domain"
-	"snippetBox-microservice/news/utils/helpers"
+	"snippetBox-microservice/news/pkg/rest-errors"
 	"strconv"
 )
 
-type newsController struct {
-	service service.NewsServiceInterface
-	helper  helpers.HelperInterface
+type news struct {
+	service service.NewsInterface
+	errors  rest_errors.Responser
 }
 
-func New(service service.NewsServiceInterface, helper helpers.HelperInterface) NewsControllerInterface {
-	return &newsController{service: service, helper: helper}
+func New(service service.NewsInterface, helper rest_errors.Responser) domain.NewsController {
+	return &news{service: service, errors: helper}
 }
 
-func (h *newsController) Home(c *gin.Context) {
+func (h *news) Home(c *gin.Context) {
 	news, err := h.service.Latest()
 	if err != nil {
-		h.helper.ServerError(c, err)
+		h.errors.ServerError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, news)
 }
 
-func (h *newsController) ShowNews(c *gin.Context) {
+func (h *news) ShowNews(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id < 1 {
-		h.helper.NotFound(c)
+		h.errors.NotFound(c)
 		return
 	}
 	news, err := h.service.FindById(id)
 	if err != nil {
 		if errors.Is(err, domain.ErrNoRecord) {
-			h.helper.NotFound(c)
+			h.errors.NotFound(c)
 			return
 		} else {
-			h.helper.ServerError(c, err)
+			h.errors.ServerError(c, err)
 			return
 		}
 	}
@@ -49,7 +49,7 @@ func (h *newsController) ShowNews(c *gin.Context) {
 }
 
 // Shouldn't be in routes
-func (h *newsController) CreateNews(news *domain.News) (int, error) {
+func (h *news) CreateNews(news *domain.News) (int, error) {
 	id, errorSlice := h.service.Save(
 		news)
 	if errorSlice != nil {

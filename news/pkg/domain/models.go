@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"time"
 )
 
@@ -15,4 +16,10 @@ type News struct {
 	Content string    `json:"content"`
 	Created time.Time `json:"created"`
 	Expires time.Time `json:"expires"`
+}
+
+type NewsController interface {
+	Home(c *gin.Context)
+	ShowNews(c *gin.Context)
+	CreateNews(news *News) (int, error)
 }

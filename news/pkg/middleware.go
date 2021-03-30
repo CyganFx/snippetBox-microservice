@@ -1,10 +1,10 @@
-package main
+package pkg
 
 import (
 	"github.com/gin-gonic/gin"
 )
 
-func (app *application) secureHeaders() gin.HandlerFunc {
+func SecureHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
 		c.Writer.Header().Set("X-Frame-Options", "deny")

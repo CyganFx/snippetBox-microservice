@@ -7,15 +7,15 @@ import (
 	"time"
 )
 
-type NewsRepository struct {
+type news struct {
 	Pool *pgxpool.Pool
 }
 
-func NewNewsRepository(Pool *pgxpool.Pool) NewsRepositoryInterface {
-	return &NewsRepository{Pool: Pool}
+func News(Pool *pgxpool.Pool) NewsInterface {
+	return &news{Pool: Pool}
 }
 
-func (r *NewsRepository) Insert(title, content string, expires time.Time) (int, error) {
+func (r *news) Insert(title, content string, expires time.Time) (int, error) {
 	stmt := `INSERT INTO news (title, content, created, expires)
 	VALUES($1, $2, $3, $4) RETURNING id`
 	var id int
@@ -29,7 +29,7 @@ func (r *NewsRepository) Insert(title, content string, expires time.Time) (int, 
 	return id, nil
 }
 
-func (r *NewsRepository) GetById(id int) (*domain.News, error) {
+func (r *news) GetById(id int) (*domain.News, error) {
 	stmt := `SELECT id, title, content, created, expires FROM news
 	WHERE expires > now() AND id = $1`
 
@@ -50,7 +50,7 @@ func (r *NewsRepository) GetById(id int) (*domain.News, error) {
 	return news, nil
 }
 
-func (r *NewsRepository) Latest() ([]*domain.News, error) {
+func (r *news) Latest() ([]*domain.News, error) {
 	stmt := `SELECT id, title, content, created, expires FROM news
 	WHERE expires > now() ORDER BY created DESC LIMIT 10`
 

@@ -30,12 +30,11 @@ func init() {
 
 type Server struct {
 	protobuffs.UnimplementedNewsServiceServer
-	newsService service.NewsServiceInterface
+	newsService service.NewsInterface
 }
 
-//Actually gives news data
 func (s *Server) SendNews(ctx context.Context, req *protobuffs.NewsGetRequest) (*protobuffs.NewsGetResponse, error) {
-	log.Printf("GetNews function was invoked with %v \n", req)
+	log.Printf("SendNews function was invoked with %v \n", req)
 	id := req.GetId()
 
 	url := fmt.Sprintf("https://localhost:4011/news/%v", id)
@@ -123,8 +122,8 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	newsRepository := repository.NewNewsRepository(dbPool)
-	newsService := service.NewNewsService(newsRepository)
+	newsRepository := repository.News(dbPool)
+	newsService := service.News(newsRepository)
 
 	protobuffs.RegisterNewsServiceServer(grpcServer, &Server{newsService: newsService})
 	log.Println("Server is running on port:50051")

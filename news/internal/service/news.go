@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"snippetBox-microservice/news/internal/repository"
 	"snippetBox-microservice/news/pkg/domain"
-	"snippetBox-microservice/news/utils/validator"
+	"snippetBox-microservice/news/pkg/validator"
 )
 
-type NewsService struct {
-	NewsRepository repository.NewsRepositoryInterface
+type news struct {
+	NewsRepository repository.NewsInterface
 }
 
-func NewNewsService(NewsRepository repository.NewsRepositoryInterface) NewsServiceInterface {
-	return &NewsService{NewsRepository: NewsRepository}
+func News(NewsRepository repository.NewsInterface) NewsInterface {
+	return &news{NewsRepository: NewsRepository}
 }
 
-func (s *NewsService) Save(news *domain.News) (int, error) {
+func (s *news) Save(news *domain.News) (int, error) {
 	title := news.Title
 	content := news.Content
 	expires := news.Expires
@@ -30,10 +30,10 @@ func (s *NewsService) Save(news *domain.News) (int, error) {
 	return s.NewsRepository.Insert(title, content, expires)
 }
 
-func (s *NewsService) FindById(id int) (*domain.News, error) {
+func (s *news) FindById(id int) (*domain.News, error) {
 	return s.NewsRepository.GetById(id)
 }
 
-func (s *NewsService) Latest() ([]*domain.News, error) {
+func (s *news) Latest() ([]*domain.News, error) {
 	return s.NewsRepository.Latest()
 }
