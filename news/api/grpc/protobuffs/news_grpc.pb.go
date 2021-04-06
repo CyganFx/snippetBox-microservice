@@ -48,7 +48,7 @@ func (c *newsServiceClient) CreateNews(ctx context.Context, in *NewsCreateReques
 	return out, nil
 }
 
-// NewsServiceServer is the server API for NewsService service.
+// NewsServiceServer is the grpc-server API for NewsService service.
 // All implementations must embed UnimplementedNewsServiceServer
 // for forward compatibility
 type NewsServiceServer interface {
@@ -133,5 +133,5 @@ var NewsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/grpc/protos/news.proto",
+	Metadata: "api/grpc/protos/news.protos",
 }

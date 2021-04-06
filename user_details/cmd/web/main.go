@@ -92,7 +92,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting  server on %v", *addr)
+	infoLog.Printf("Starting  grpc-server on %v", *addr)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	//err = srv.ListenAndServe()
 	errorLog.Fatal(err)

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"snippetBox-microservice/news/internal/service"
 	"snippetBox-microservice/news/pkg/domain"
 	"time"
 )
@@ -11,7 +12,7 @@ type news struct {
 	Pool *pgxpool.Pool
 }
 
-func News(Pool *pgxpool.Pool) NewsInterface {
+func News(Pool *pgxpool.Pool) service.NewsRepositoryInterface {
 	return &news{Pool: Pool}
 }
 

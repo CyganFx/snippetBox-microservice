@@ -6,10 +6,14 @@ import (
 	"flag"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"snippetBox-microservice/news/api/controller"
+	"snippetBox-microservice/news/api/grpc/grpc-server"
+	"snippetBox-microservice/news/api/grpc/protobuffs"
 	"snippetBox-microservice/news/internal/repository"
 	"snippetBox-microservice/news/internal/service"
 	"snippetBox-microservice/news/pkg"
@@ -45,6 +49,19 @@ func main() {
 	restErrorsResponser := rest_errors.NewJsonResponser(errorLog)
 	newsController := controller.New(newsService, restErrorsResponser)
 
+	grpcNetListener, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalf("Failed to listen:%v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+
+	protobuffs.RegisterNewsServiceServer(grpcServer, &grpc_server.Server{NewsService: newsService})
+	log.Println("GrpcServer is running on port:50051")
+	if err := grpcServer.Serve(grpcNetListener); err != nil {
+		log.Fatalf("failed to serve:%v", err)
+	}
+
 	tlsConfig := &tls.Config{
 		PreferServerCipherSuites: true,
 		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
@@ -60,7 +77,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting  server on %v", *addr)
+	infoLog.Printf("Starting  grpc-server on %v", *addr)
 	err = srv.ListenAndServeTLS("./crypto/tls/cert.pem", "./crypto/tls/key.pem")
 	errorLog.Fatal(err)
 }

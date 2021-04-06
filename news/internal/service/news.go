@@ -2,17 +2,24 @@ package service
 
 import (
 	"fmt"
-	"snippetBox-microservice/news/internal/repository"
+	"snippetBox-microservice/news/api/controller"
 	"snippetBox-microservice/news/pkg/domain"
 	"snippetBox-microservice/news/pkg/validator"
+	"time"
 )
 
 type news struct {
-	NewsRepository repository.NewsInterface
+	repo NewsRepositoryInterface
 }
 
-func News(NewsRepository repository.NewsInterface) NewsInterface {
-	return &news{NewsRepository: NewsRepository}
+type NewsRepositoryInterface interface {
+	Insert(title, content string, expires time.Time) (int, error)
+	GetById(id int) (*domain.News, error)
+	Latest() ([]*domain.News, error)
+}
+
+func News(NewsRepository NewsRepositoryInterface) controller.NewsServiceInterface {
+	return &news{repo: NewsRepository}
 }
 
 func (s *news) Save(news *domain.News) (int, error) {
@@ -27,13 +34,13 @@ func (s *news) Save(news *domain.News) (int, error) {
 		return -1, fmt.Errorf("news validation error")
 	}
 
-	return s.NewsRepository.Insert(title, content, expires)
+	return s.repo.Insert(title, content, expires)
 }
 
 func (s *news) FindById(id int) (*domain.News, error) {
-	return s.NewsRepository.GetById(id)
+	return s.repo.GetById(id)
 }
 
 func (s *news) Latest() ([]*domain.News, error) {
-	return s.NewsRepository.Latest()
+	return s.repo.Latest()
 }

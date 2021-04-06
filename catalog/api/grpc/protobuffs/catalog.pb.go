@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.14.0
-// source: api/grpc/protos/catalog.proto
+// source: api/grpc/protos/catalog.protos
 
 package protobuffs
 
@@ -23,7 +23,7 @@ const (
 )
 
 // This is a compile-time assertion that a sufficiently up-to-date version
-// of the legacy proto package is being used.
+// of the legacy protos package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
 type ProductSendRequest struct {

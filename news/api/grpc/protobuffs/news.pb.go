@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.14.0
-// source: api/grpc/protos/news.proto
+// source: api/grpc/protos/news.protos
 
 package protobuffs
 

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0-devel
 // 	protoc        v3.14.0
-// source: api/grpc/protos/catalog.proto
+// source: api/grpc/protos/catalog.protos
 
 package protobuffs
 

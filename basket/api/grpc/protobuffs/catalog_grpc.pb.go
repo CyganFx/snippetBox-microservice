@@ -38,7 +38,7 @@ func (c *catalogServiceClient) SendProduct(ctx context.Context, in *ProductSendR
 	return out, nil
 }
 
-// CatalogServiceServer is the server API for CatalogService service.
+// CatalogServiceServer is the grpc-server API for CatalogService service.
 // All implementations must embed UnimplementedCatalogServiceServer
 // for forward compatibility
 type CatalogServiceServer interface {
@@ -97,5 +97,5 @@ var CatalogService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/grpc/protos/catalog.proto",
+	Metadata: "api/grpc/protos/catalog.protos",
 }
